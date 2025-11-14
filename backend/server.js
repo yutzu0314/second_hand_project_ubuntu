@@ -1,8 +1,11 @@
+// -------------------- Imports --------------------
 import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJSDoc from 'swagger-jsdoc';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,10 +13,30 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// -------------------- Swagger 設定 --------------------
+const swaggerSpec = swaggerJSDoc({
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'SecondHand - API',
+            version: '0.1.0',
+            description: '二手交易平台 API 文件',
+        },
+        servers: [{ url: 'http://localhost:3000' }],
+    },
+    apis: [path.join(__dirname, 'server.js')],
+});
+
+// -------------------- 建立 Express App --------------------
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// -------------------- 掛載 Swagger UI --------------------
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/openapi.json', (_req, res) => res.json(swaggerSpec));
+
 
 // MySQL
 const pool = mysql.createPool({
@@ -59,6 +82,38 @@ async function detectUserColumns() {
 await detectUserColumns();
 
 // -------------------- API：明碼登入（先跑通） --------------------
+
+/**
+ * @openapi
+ * /admin/login:
+ *   post:
+ *     summary: 後台管理員登入
+ *     tags:
+ *       - Admin
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@example.com
+ *               password:
+ *                 type: string
+ *                 example: 123456
+ *     responses:
+ *       200:
+ *         description: 登入成功
+ *       400:
+ *         description: 缺少 email 或 password
+ *       401:
+ *         description: 帳號不存在或密碼錯誤
+ *       403:
+ *         description: 帳號未啟用或沒有後台權限
+ */
+
 app.post('/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body || {};
@@ -119,11 +174,107 @@ async function simpleLogin(req, res, roleWanted) {
     res.json({ success: true, token: 'DEV_TOKEN', id: u.id, role: u.role });
 }
 
+/**
+ * @openapi
+ * /buyer/login:
+ *   post:
+ *     summary: 買家登入
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: buyer@example.com
+ *               password:
+ *                 type: string
+ *                 example: 123456
+ *     responses:
+ *       200:
+ *         description: 登入成功
+ *       400:
+ *         description: 缺少 email 或 password
+ *       401:
+ *         description: 帳號不存在或密碼錯誤
+ *       403:
+ *         description: 帳號未啟用或非 buyer 身分
+ */
+
 app.post('/buyer/login', (req, res) => simpleLogin(req, res, 'buyer'));
+
+/**
+ * @openapi
+ * /seller/login:
+ *   post:
+ *     summary: 賣家登入
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: seller@example.com
+ *               password:
+ *                 type: string
+ *                 example: 123456
+ *     responses:
+ *       200:
+ *         description: 登入成功
+ *       400:
+ *         description: 缺少 email 或 password
+ *       401:
+ *         description: 帳號不存在或密碼錯誤
+ *       403:
+ *         description: 帳號未啟用或非 seller 身分
+ */
+
 app.post('/seller/login', (req, res) => simpleLogin(req, res, 'seller'));
 
 
 // -------------------- API：使用者列表 --------------------
+
+/**
+ * @openapi
+ * /api/users:
+ *   get:
+ *     summary: 取得使用者列表
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: 使用者清單
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   email:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                     nullable: true
+ *                   role:
+ *                     type: string
+ *                     nullable: true
+ *                   status:
+ *                     type: string
+ *                     nullable: true
+ */
+
 app.get('/api/users', async (_req, res) => {
     try {
         const sql = `
@@ -146,6 +297,50 @@ app.get('/api/users', async (_req, res) => {
 });
 
 // -------------------- API：新增使用者（先明碼寫入） --------------------
+
+/**
+ * @openapi
+ * /api/users:
+ *   post:
+ *     summary: 新增使用者
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: 123456
+ *               name:
+ *                 type: string
+ *                 example: 小明
+ *               role:
+ *                 type: string
+ *                 description: 使用者角色（buyer / seller / admin）
+ *                 example: buyer
+ *               status:
+ *                 type: string
+ *                 description: 帳號狀態（active / banned）
+ *                 example: active
+ *     responses:
+ *       201:
+ *         description: 建立成功
+ *       400:
+ *         description: 缺少 email 或 password
+ *       409:
+ *         description: Email 已存在
+ */
+
 app.post('/api/users', async (req, res) => {
     try {
         const { email, password, role = 'buyer', status = 'active', name = null } = req.body || {};
@@ -172,6 +367,52 @@ app.post('/api/users', async (req, res) => {
 });
 
 // 取得檢舉清單（預設 pending）
+
+/**
+ * @openapi
+ * /api/reports:
+ *   get:
+ *     summary: 取得檢舉清單
+ *     tags:
+ *       - Reports
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           default: pending
+ *           example: pending
+ *         description: 檢舉狀態（pending / reviewed / resolved）
+ *     responses:
+ *       200:
+ *         description: 檢舉列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   reporter_id:
+ *                     type: integer
+ *                   target_type:
+ *                     type: string
+ *                   target_id:
+ *                     type: integer
+ *                   reason_code:
+ *                     type: string
+ *                   reason_text:
+ *                     type: string
+ *                     nullable: true
+ *                   status:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ */
+
 app.get('/api/reports', async (req, res) => {
     try {
         const status = (req.query.status || 'pending').toString();
@@ -203,6 +444,49 @@ app.get('/api/reports', async (req, res) => {
 
 
 // 建立檢舉（給前台使用）
+
+/**
+ * @openapi
+ * /api/reports:
+ *   post:
+ *     summary: 建立檢舉
+ *     tags:
+ *       - Reports
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reporter_id
+ *               - target_type
+ *               - target_id
+ *               - reason_code
+ *             properties:
+ *               reporter_id:
+ *                 type: integer
+ *                 example: 1
+ *               target_type:
+ *                 type: string
+ *                 example: product
+ *               target_id:
+ *                 type: integer
+ *                 example: 10
+ *               reason_code:
+ *                 type: string
+ *                 example: fraud
+ *               reason_text:
+ *                 type: string
+ *                 nullable: true
+ *                 example: 賣家疑似詐騙
+ *     responses:
+ *       201:
+ *         description: 檢舉已建立
+ *       400:
+ *         description: 缺少必要欄位
+ */
+
 app.post('/api/reports', async (req, res) => {
     try {
         const { reporter_id, target_type, target_id, reason_code, reason_text } = req.body || {};
@@ -230,6 +514,41 @@ app.post('/api/reports', async (req, res) => {
 });
 
 // 更新檢舉狀態（管理員處理）
+
+/**
+ * @openapi
+ * /api/reports/{id}:
+ *   patch:
+ *     summary: 更新檢舉狀態
+ *     tags:
+ *       - Reports
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 檢舉 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: 新狀態（in_review / resolved / rejected）
+ *                 example: resolved
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *       400:
+ *         description: 缺少 id 或 status
+ */
+
 app.patch('/api/reports/:id', async (req, res) => {
     try {
         const id = Number(req.params.id);
@@ -245,6 +564,44 @@ app.patch('/api/reports/:id', async (req, res) => {
 });
 
 // 更新使用者（部分欄位更新：name/role/status）
+
+/**
+ * @openapi
+ * /api/users/{id}:
+ *   patch:
+ *     summary: 更新使用者資料
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 使用者 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: 新名字
+ *               role:
+ *                 type: string
+ *                 example: seller
+ *               status:
+ *                 type: string
+ *                 example: active
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *       400:
+ *         description: id 不合法或沒有可更新欄位
+ */
+
 app.patch('/api/users/:id', async (req, res) => {
     try {
         const id = Number(req.params.id);
@@ -269,6 +626,28 @@ app.patch('/api/users/:id', async (req, res) => {
 });
 
 // 刪除使用者
+
+/**
+ * @openapi
+ * /api/users/{id}:
+ *   delete:
+ *     summary: 刪除使用者
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 使用者 ID
+ *     responses:
+ *       200:
+ *         description: 刪除成功
+ *       400:
+ *         description: id 不合法
+ */
+
 app.delete('/api/users/:id', async (req, res) => {
     try {
         const id = Number(req.params.id);
@@ -282,7 +661,41 @@ app.delete('/api/users/:id', async (req, res) => {
     }
 });
 
-// （可選）重設密碼
+// 重設密碼
+
+/**
+ * @openapi
+ * /api/users/{id}/reset-password:
+ *   post:
+ *     summary: 重設使用者密碼
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 使用者 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 example: newpassword123
+ *     responses:
+ *       200:
+ *         description: 密碼已更新
+ *       400:
+ *         description: 缺少 id 或 password
+ */
+
 app.post('/api/users/:id/reset-password', async (req, res) => {
     try {
         const id = Number(req.params.id);
