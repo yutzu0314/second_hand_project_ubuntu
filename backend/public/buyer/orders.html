@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>訂單追蹤 | ReuseX</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ===== 導覽列 ===== -->
+  <div class="navbar">
+    <div class="nav-left">
+      <img src="images/logo.png" class="logo-img">
+      <a href="buyer.html">首頁</a>
+      <a href="buyer.html">買家功能</a>
+      <a href="orders.html"><strong>訂單追蹤</strong></a>
+      <a href="myreviews.html">我的評價</a>
+    </div>
+  </div>
+
+  <div class="product-list">
+
+    <h2>📦 我的訂單</h2>
+
+    <!-- ===== 篩選區 ===== -->
+    <div class="filter-area">
+      <label>篩選訂單：</label>
+      <select id="orderFilter">
+        <option value="all">全部訂單</option>
+        <option value="reviewed">已評價</option>
+        <option value="unreviewed">未評價</option>
+      </select>
+    </div>
+
+    <div id="orderContainer"></div>
+  </div>
+
+  <!-- ===== 聊天視窗 ===== -->
+  <div id="chatModal" class="modal hidden">
+    <div class="chat-box">
+      <h3 id="chatTitle">與賣家聊天</h3>
+
+      <div id="chatMessages" class="chat-messages"></div>
+
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="輸入訊息..." />
+        <button id="sendChatBtn" class="save-btn">送出</button>
+      </div>
+
+      <button id="closeChat" class="save-btn close-chat">關閉</button>
+    </div>
+  </div>
+
+
+<!-- ===== SCRIPT START ===== -->
+<script>
+  const orders = JSON.parse(localStorage.getItem("orders")) || [];
+  const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+  let chats = JSON.parse(localStorage.getItem("chats")) || {};
+
+  const container = document.getElementById("orderContainer");
+  const filterSelect = document.getElementById("orderFilter");
+
+  // ===== 渲染訂單 =====
+  function renderOrders(filter = "all") {
+    container.innerHTML = "";
+
+    if (orders.length === 0) {
+      container.innerHTML = "<p>目前沒有訂單。</p>";
+      return;
+    }
+
+    // 新 → 舊
+    const sorted = [...orders].sort((a, b) => b.id - a.id);
+
+    const filtered = sorted.filter(order => {
+      const reviewed = reviews.some(r => r.orderId === order.id);
+      if (filter === "all") return true;
+      if (filter === "reviewed") return reviewed;
+      if (filter === "unreviewed") return !reviewed;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = "<p>沒有符合條件的訂單。</p>";
+      return;
+    }
+
+    filtered.forEach(order => {
+      const reviewed = reviews.some(r => r.orderId === order.id);
+
+      // ★ 修正：取商品名稱
+      const productNames = order.items.map(i => i.name).join("、");
+
+      const div = document.createElement("div");
+      div.classList.add("product-card");
+
+      div.innerHTML = `
+        <h3>訂單編號：${order.id}</h3>
+        <p>下單時間：${order.date}</p>
+        <p>狀態：<strong>${order.status}</strong></p>
+        <p class="items">商品內容：${productNames}</p>
+
+        <button class="save-btn review-btn"
+                data-id="${order.id}"
+                ${reviewed ? "disabled" : ""}>
+          ${reviewed ? "已評價" : "去評價"}
+        </button>
+
+        <button class="save-btn contact-btn" 
+                data-id="${order.id}"
+                data-items="${productNames}">
+          聯絡賣家
+        </button>
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  // 初次渲染
+  renderOrders();
+
+  // ===== 篩選事件 =====
+  filterSelect.addEventListener("change", () => {
+    renderOrders(filterSelect.value);
+  });
+
+
+  // =======================
+  // ===== 聊天功能 =======
+  // =======================
+
+  const chatModal = document.getElementById("chatModal");
+  const chatMessages = document.getElementById("chatMessages");
+  const chatInput = document.getElementById("chatInput");
+  const sendChatBtn = document.getElementById("sendChatBtn");
+  const closeChat = document.getElementById("closeChat");
+
+  let currentChatOrderId = null;
+
+  // 打開聊天
+  function openChat(orderId, productNames) {
+    currentChatOrderId = orderId;
+
+    document.getElementById("chatTitle").textContent =
+      "訂單 " + orderId + "｜商品：" + productNames;
+
+    chatModal.classList.remove("hidden");
+    loadChatMessages();
+  }
+
+  // 顯示聊天紀錄
+  function loadChatMessages() {
+    chatMessages.innerHTML = "";
+
+    const msgs = chats[currentChatOrderId] || [];
+
+    msgs.forEach(m => {
+      const div = document.createElement("div");
+      div.classList.add("chat-message");
+      div.classList.add(m.from === "buyer" ? "chat-buyer" : "chat-seller");
+      div.textContent = m.text;
+      chatMessages.appendChild(div);
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // 發送聊天訊息
+  sendChatBtn.onclick = () => {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    if (!chats[currentChatOrderId]) chats[currentChatOrderId] = [];
+
+    chats[currentChatOrderId].push({
+      from: "buyer",
+      text,
+      time: new Date().toLocaleTimeString()
+    });
+
+    localStorage.setItem("chats", JSON.stringify(chats));
+    chatInput.value = "";
+    loadChatMessages();
+  };
+
+  // 關閉聊天
+  closeChat.onclick = () => chatModal.classList.add("hidden");
+
+  // 點擊聯絡賣家
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("contact-btn")) {
+      const orderId = e.target.dataset.id;
+      const productNames = e.target.dataset.items;
+      openChat(orderId, productNames);
+    }
+  });
+// 點擊「去評價」
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("review-btn")) {
+    const orderId = e.target.dataset.id;
+    if (!e.target.disabled) {
+      window.location.href = `rate.html?orderId=${orderId}`;
+    }
+  }
+});
+
+</script>
+<!-- ===== SCRIPT END ===== -->
+
+</body>
+</html>

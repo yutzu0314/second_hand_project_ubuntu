@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>評價管理 - 二手交易平台</title>
+
+  <style>
+    :root {
+      --bg: #f8f8ef;
+      --card: #e4ead7;
+      --card-outer: #c9d2b8;
+      --green: #5e6b3f;
+      --ink: #2f3b1a;
+      --star: #e0b84b;
+    }
+
+    body {
+      background-color: var(--bg);
+      font-family: "Noto Sans TC", "微軟正黑體", sans-serif;
+      margin: 0;
+    }
+
+    /* ===== 導覽列 ===== */
+    .navbar {
+      background-color: #a4b693;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 40px;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-left a, .nav-right a {
+      color: var(--ink);
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 15px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background-color: #d5dfc4;
+      border-radius: 20px;
+      padding: 4px 10px;
+      margin-left: 20px;
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 6px;
+      width: 200px;
+      font-size: 14px;
+    }
+
+    .search-box button {
+      border: none;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    /* ===== 主內容 ===== */
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      background: var(--card-outer);
+      padding: 25px;
+      border-radius: 14px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--ink);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .review-card {
+      background-color: var(--card);
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .review-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .stars {
+      color: var(--star);
+      font-size: 20px;
+      margin: 6px 0;
+    }
+
+    .review-content {
+      font-size: 15px;
+      margin: 8px 0;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    .review-time {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* ===== 回覆區 ===== */
+    .reply-title {
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      color: #4a5d23;
+    }
+
+    .reply-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #c5c9b6;
+      background-color: #f2f4ec;
+      resize: none;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .reply-btn {
+      margin-top: 8px;
+      background: #606c38;
+      color: #fff;
+      padding: 6px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .reply-btn:hover {
+      background: #4c572e;
+    }
+
+    .reply-text {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #ffffffa8;
+      border-radius: 8px;
+      color: #3a3a3a;
+      border-left: 4px solid #7d8f54;
+    }
+    .dropdown { position: relative; }
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%; 
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f8f8ef;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 10px 0;
+  min-width: 140px;
+  z-index: 99;
+}
+
+.dropdown-content a {
+  display: block;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.dropdown-content a:hover {
+  background-color: #e4ead7;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- 導覽列 -->
+  <div class="navbar">
+    <div class="nav-left">
+      <div style="background: var(--green); width:60px; height:60px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800;">二手</div>
+
+      <div class="search-box">
+        <input type="text" placeholder="搜尋商品...">
+        <button>🔍</button>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="dropdown">
+        <a href="#">賣家中心 ▼</a>
+        <div class="dropdown-content">
+          <a href="index.html">刊登商品</a>
+          <a href="index.html">編輯商品</a>
+          <a href="orders.html">檢視訂單</a>
+          <a href="review.html">評價管理</a>
+        </div>
+      </div>
+      <a href="#">訊息</a>
+      <a href="#">購物車</a>
+      <a href="../buyer/buyer.html">買家系統</a>
+      <a href="signup.html">SIGN UP</a>
+      <a href="login.html">LOGIN</a>
+    </div>
+  </div>
+
+  <!-- 主內容 -->
+  <div class="container">
+    <h2>評價管理</h2>
+
+    <div id="reviewArea"></div>
+  </div>
+
+  <script>
+    // 模擬評價資料
+    const reviews = [
+      {
+        id: 1,
+        product: "AirPods Pro",
+        stars: 5,
+        content: "商品狀態很好，賣家出貨超快，包裝完整！",
+        time: "2025-03-01 14:22"
+      },
+      {
+        id: 2,
+        product: "Switch 主機",
+        stars: 4,
+        content: "主機正常運作，外觀有一點小刮傷，但可接受。",
+        time: "2025-02-20 18:40"
+      },
+      {
+        id: 3,
+        product: "iPhone 13",
+        stars: 5,
+        content: "超級新！電池健康也很好，非常值得！",
+        time: "2025-02-02 10:05"
+      }
+    ];
+
+    // 載入已儲存的回覆
+    let sellerReplies = JSON.parse(localStorage.getItem("sellerReplies") || "{}");
+
+    const reviewArea = document.getElementById("reviewArea");
+
+    reviews.forEach(r => {
+      const card = document.createElement("div");
+      card.className = "review-card";
+
+      card.innerHTML = `
+        <div class="review-title">${r.product}</div>
+        <div class="stars">${"★".repeat(r.stars)}${"☆".repeat(5-r.stars)}</div>
+        <div class="review-content">${r.content}</div>
+        <div class="review-time">📅 ${r.time}</div>
+
+        <div class="reply-title">賣家回覆：</div>
+        <textarea class="reply-input" id="reply-${r.id}" placeholder="輸入回覆內容..."></textarea>
+        <button class="reply-btn" onclick="submitReply(${r.id})">送出回覆</button>
+
+        <div id="replyText-${r.id}" class="reply-text" style="display:none;"></div>
+      `;
+
+      reviewArea.appendChild(card);
+
+      // 如果之前回覆過 → 顯示回覆
+      if (sellerReplies[r.id]) {
+        document.getElementById(`replyText-${r.id}`).textContent = "賣家回覆：" + sellerReplies[r.id];
+        document.getElementById(`replyText-${r.id}`).style.display = "block";
+      }
+    });
+
+    // 送出回覆
+    function submitReply(id) {
+      const text = document.getElementById(`reply-${id}`).value.trim();
+      if (!text) return alert("請輸入回覆內容！");
+
+      sellerReplies[id] = text;
+
+      // 儲存回 localStorage
+      localStorage.setItem("sellerReplies", JSON.stringify(sellerReplies));
+
+      // 顯示回覆
+      const replyBox = document.getElementById(`replyText-${id}`);
+      replyBox.textContent = "賣家回覆：" + text;
+      replyBox.style.display = "block";
+
+      alert("回覆已送出！");
+    }
+  </script>
+
+</body>
+</html>
+

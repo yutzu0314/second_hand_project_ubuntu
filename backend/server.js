@@ -53,6 +53,7 @@ app.use('/login', express.static(path.join(__dirname, 'public/login')));
 app.use('/admin', express.static(path.join(__dirname, 'public/admin')));
 app.use('/buyer', express.static(path.join(__dirname, 'public/buyer')));
 app.use('/seller', express.static(path.join(__dirname, 'public/seller')));
+app.use('/sign', express.static(path.join(__dirname, 'public/sign')));
 app.get('/', (req, res) => res.redirect('/login'));
 
 // -------------------- 動態偵測欄位 --------------------

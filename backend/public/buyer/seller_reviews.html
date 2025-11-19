@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>評價管理 | ReuseX 賣家端</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-left">
+      <img src="images/logo.png" class="logo-img">
+      <a href="index.html">首頁</a>
+      <a href="seller.html">賣家功能</a>
+      <a href="seller_reviews.html"><strong>評價管理</strong></a>
+    </div>
+  </div>
+
+  <div class="product-list" id="sellerReviewList">
+    <h2>⭐ 買家評價管理</h2>
+  </div>
+
+  <script>
+    const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+    const list = document.getElementById("sellerReviewList");
+
+    if (reviews.length === 0) {
+      list.innerHTML += "<p>目前尚無任何評價。</p>";
+    } else {
+      reviews.forEach((r, index) => {
+        const div = document.createElement("div");
+        div.classList.add("product-card");
+
+        const starText = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
+
+        div.innerHTML = `
+          <h3>${r.product}（訂單：${r.orderId}）</h3>
+          <p>買家：${r.buyer}</p>
+          <p>評分：<span style="color:gold;">${starText}</span></p>
+          <p>評論內容：${r.comment}</p>
+          <p>時間：${r.date}</p>
+          <p style="margin-top:6px; color:#444;">
+            目前回覆：${r.reply ? r.reply : "（尚未回覆）"}
+          </p>
+          <textarea rows="2" placeholder="輸入回覆內容..." data-index="${index}" class="replyInput"></textarea>
+          <button class="save-btn replyBtn" data-index="${index}">送出回覆</button>
+        `;
+
+        list.appendChild(div);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("replyBtn")) {
+          const idx = e.target.getAttribute("data-index");
+          const textarea = document.querySelector(`textarea.replyInput[data-index="${idx}"]`);
+          const text = textarea.value.trim();
+          if (!text) {
+            alert("請先輸入回覆內容！");
+            return;
+          }
+          reviews[idx].reply = text;
+          localStorage.setItem("reviews", JSON.stringify(reviews));
+          alert("回覆已送出！");
+          location.reload();
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

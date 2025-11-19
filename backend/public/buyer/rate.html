@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>訂單評價 | ReuseX</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-left">
+      <img src="images/logo.png" class="logo-img">
+      <a href="buyer.html">首頁</a>
+      <a href="buyer.html">買家功能</a>
+      <a href="orders.html">訂單追蹤</a>
+      <a href="myreviews.html">我的評價</a>
+    </div>
+  </div>
+
+  <div class="review-container">
+    <h2>📝 訂單評價</h2>
+    <p id="productName" style="font-weight:bold; font-size:18px;"></p>
+
+    <!-- 星星評分 -->
+    <div class="stars" id="starGroup"></div>
+
+    <!-- 評論內容 -->
+    <textarea id="comment" placeholder="請輸入您的評價內容..." rows="5"></textarea>
+
+    <button id="submitReview" class="save-btn">送出評價</button>
+  </div>
+
+  <script>
+    // 讀取 URL 上的訂單 id
+    const params = new URLSearchParams(window.location.search);
+    const currentOrderId = params.get("orderId");
+
+    // 讀訂單，顯示商品
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const order = orders.find(o => o.id == currentOrderId);
+
+    let mainItem = null;
+    if (order && order.items.length > 0) {
+      mainItem = order.items[0];
+      document.getElementById("productName").textContent =
+        "商品：" + mainItem.name;
+    } else {
+      document.getElementById("productName").textContent = "找不到此訂單";
+    }
+
+    // 建星星
+    let rating = 0;
+    const starGroup = document.getElementById("starGroup");
+    let starHTML = "";
+    for (let i = 1; i <= 5; i++) {
+      starHTML += `<span data-score="${i}">★</span>`;
+    }
+    starGroup.innerHTML = starHTML;
+
+    const stars = starGroup.querySelectorAll("span");
+    stars.forEach((star) => {
+      star.addEventListener("click", () => {
+        rating = Number(star.dataset.score);
+        stars.forEach(s => s.classList.remove("active"));
+        for (let i = 0; i < rating; i++) {
+          stars[i].classList.add("active");
+        }
+      });
+    });
+
+    // 送出評價
+    document.getElementById("submitReview").addEventListener("click", () => {
+      const comment = document.getElementById("comment").value.trim();
+
+      if (!order || !mainItem) {
+        alert("找不到訂單資料，無法評價。");
+        return;
+      }
+      if (rating === 0) {
+        alert("請先選擇星星數！");
+        return;
+      }
+      if (!comment) {
+        alert("請輸入評價內容！");
+        return;
+      }
+
+      // 從商品名稱推回賣家（用和 buyer.js 一樣的商品表）
+      const productMap = {
+        "iPhone 13": "SELLER A",
+        "Switch 主機": "SELLER B",
+        "AirPods Pro": "SELLER C",
+        "MacBook Air": "SELLER D"
+      };
+      const sellerName = productMap[mainItem.name] || "Seller01";
+
+      const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+      const newReview = {
+        id: Date.now(),
+        orderId: order.id,
+        buyer: "Buyer01",
+        seller: sellerName,
+        product: mainItem.name,
+        rating: rating,
+        comment: comment,
+        reply: "",
+        date: new Date().toLocaleString()
+      };
+
+      reviews.push(newReview);
+      localStorage.setItem("reviews", JSON.stringify(reviews));
+
+      alert("📝 評價已送出！");
+      window.location.href = "myreviews.html";
+    });
+  </script>
+
+</body>
+</html>

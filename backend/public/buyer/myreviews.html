@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的評價 | ReuseX</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ===== 導覽列 ===== -->
+  <div class="navbar">
+    <div class="nav-left">
+      <img src="images/logo.png" class="logo-img">
+      <a href="buyer.html">首頁</a>>
+      <a href="buyer.html">買家功能</a>
+      <a href="orders.html">訂單追蹤</a>
+      <a href="myreviews.html"><strong>我的評價</strong></a>
+    </div>
+  </div>
+
+  <div class="product-list">
+    <h2>⭐ 我的評價</h2>
+    <div id="reviewContainer"></div>
+  </div>
+
+  <script>
+    const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+
+const container = document.getElementById("reviewContainer");
+
+if (reviews.length === 0) {
+  container.innerHTML = "<p>目前還沒有任何評價。</p>";
+} else {
+
+  // 最新在最上面
+  reviews.slice().reverse().forEach((r) => {
+
+    const stars = "⭐".repeat(Number(r.rating) || 0);  // rating 是數字
+
+    const div = document.createElement("div");
+    div.classList.add("product-card");
+
+    div.innerHTML = `
+      <h3>${r.product || "（未指定商品）"}</h3>
+
+      <p>評分：${stars}</p>
+
+      <p>我的評論：${r.comment || "(無評論)"} </p>
+
+      <p>時間：${r.date || "時間未記錄"} </p>
+
+      <p style="color:gray;">
+        （賣家${r.reply ? "已回覆：" + r.reply : "尚未回覆"}）
+      </p>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+  </script>
+
+</body>
+</html>

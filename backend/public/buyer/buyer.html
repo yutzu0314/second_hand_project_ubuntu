@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReuseX 買家首頁</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ===== 統一後的導覽列 ===== -->
+  <div class="navbar">
+    <div class="nav-left">
+      <img src="images/logo.png" alt="ReuseX Logo" class="logo-img">
+      <a href="buyer.html" class="nav-home active">首頁</a>
+      <a href="orders.html">訂單追蹤</a>
+      <a href="myreviews.html">我的評價</a>
+    </div>
+
+    <div class="nav-right">
+      <!-- 搜尋框 -->
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜尋商品..." />
+        <button id="searchBtn">🔍</button>
+      </div>
+
+      <!-- 使用者頭像 + 購物車 -->
+      <img src="images/user.png" alt="User" class="user-icon">
+      <a href="#" id="cartBtn">🛒 (<span id="cartCount">0</span>)</a>
+    </div>
+  </div>
+
+  <!-- ===== Banner（保留你的風格，可有可無）===== -->
+  <div class="banner">
+    <h2>ReuseX — 找到下一個珍惜它的主人。</h2>
+    <p>高品質二手商品 · 值得信賴的交易體驗</p>
+  </div>
+
+  <!-- ===== 商品列表 ===== -->
+  <div class="product-list" id="productList"></div>
+
+  <!-- ===== 購物車視窗 ===== -->
+  <div id="checkoutModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>🛍 購物車清單</h3>
+      <ul id="cartItems"></ul>
+      <button id="confirmOrder" class="save-btn">確認下單</button>
+      <button id="closeModal" class="save-btn">關閉</button>
+    </div>
+  </div>
+
+  <!-- ===== 加入購物車提示視窗 ===== -->
+  <div id="addedModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>✅ 已加入購物車！</h3>
+      <div style="margin-top: 15px;">
+        <button id="continueShopping" class="save-btn">繼續逛逛</button>
+        <button id="goToCheckout" class="save-btn">直接結帳</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="buyer.js" defer></script>
+</body>
+</html>

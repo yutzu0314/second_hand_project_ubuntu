@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>註冊帳號 - 二手交易平台</title>
+  <style>
+    body {
+      background-color: #f8f8ef;
+      font-family: "Noto Sans TC", "微軟正黑體", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .container {
+      background: #eef0e7;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 420px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #4a5d23;
+      margin-bottom: 25px;
+    }
+
+    .role-select {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .role-select button {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background-color: #cbd1b7;
+      color: #4a5d23;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .role-select button.active {
+      background-color: #4a5d23;
+      color: white;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 18px;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4a5d23;
+    }
+
+    .btn {
+      width: 100%;
+      background-color: #4a5d23;
+      color: white;
+      padding: 14px 0;
+      border: none;
+      border-radius: 10px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background-color: #3b4b1b;
+    }
+
+    .back {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .back a {
+      color: #4a5d23;
+      text-decoration: none;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>註冊帳號</h2>
+
+    <div class="role-select">
+      <button id="sellerBtn" class="active">賣家</button>
+      <button id="buyerBtn">買家</button>
+    </div>
+
+    <input type="text" id="regUser" placeholder="輸入帳號" required>
+    <input type="password" id="regPass" placeholder="輸入密碼" required>
+
+    <button class="btn" id="registerBtn">註冊</button>
+
+    <div class="back">
+      <a href="/login/login.html">返回登入</a>
+    </div>
+  </div>
+
+  <script>
+    const sellerBtn = document.getElementById("sellerBtn");
+    const buyerBtn = document.getElementById("buyerBtn");
+    const registerBtn = document.getElementById("registerBtn");
+
+    let role = "seller";
+
+    sellerBtn.onclick = () => {
+      role = "seller";
+      sellerBtn.classList.add("active");
+      buyerBtn.classList.remove("active");
+    };
+
+    buyerBtn.onclick = () => {
+      role = "buyer";
+      buyerBtn.classList.add("active");
+      sellerBtn.classList.remove("active");
+    };
+
+    registerBtn.onclick = () => {
+      const user = document.getElementById("regUser").value.trim();
+      const pass = document.getElementById("regPass").value.trim();
+
+      if (!user || !pass) {
+        alert("帳號與密碼不可為空！");
+        return;
+      }
+
+      // 讀出現有資料
+      let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+
+      // 檢查重複帳號
+      if (accounts.some(acc => acc.user === user)) {
+        alert("此帳號已被註冊！");
+        return;
+      }
+
+      // 新增帳號
+      accounts.push({ user, pass, role });
+      localStorage.setItem("accounts", JSON.stringify(accounts));
+
+      alert("註冊成功！");
+      window.location.href = "/login/login.html";
+    };
+  </script>
+</body>
+</html>

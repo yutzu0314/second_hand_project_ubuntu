@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>二手交易平台 - 商品管理</title>
+
+  <style>
+    :root {
+      --bg: #f8f8ef;
+      --card: #e4ead7;
+      --card-outer: #c9d2b8;
+      --green: #5e6b3f;
+      --ink: #2f3b1a;
+    }
+
+    body {
+      background-color: var(--bg);
+      font-family: "Noto Sans TC", "微軟正黑體", sans-serif;
+      margin: 0;
+    }
+
+    /* 導覽列 */
+    .navbar {
+      background-color: #a4b693;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 40px;
+    }
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+    }
+    .nav-left a, .nav-right a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 15px;
+      margin: 0 10px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background-color: #d5dfc4;
+      border-radius: 20px;
+      padding: 4px 10px;
+      margin-left: 20px;
+    }
+
+    .search-box input {
+      border: none; outline: none;
+      background: transparent;
+      font-size: 14px;
+      padding: 6px;
+      width: 200px;
+    }
+
+    .search-box button {
+      border: none;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    /* 下拉選單 */
+    .dropdown { position: relative; }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      background-color: #f8f8ef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      border-radius: 8px;
+      padding: 10px 0;
+      min-width: 140px;
+      z-index: 99;
+    }
+
+    .dropdown-content a {
+      display: block;
+      color: var(--ink);
+      text-decoration: none;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #e4ead7;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* 主要內容 */
+    .product-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      background: var(--card-outer);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .product-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 26px;
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+    }
+
+    .product-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 180px;
+      flex: 0 0 180px;
+    }
+
+    .featured {
+      font-weight: 800;
+      color: var(--ink);
+      display: inline-block;
+      transform: translateY(-10px);
+      margin-bottom: 6px;
+    }
+
+    .product-thumb {
+      width: 150px;
+      height: 150px;
+      background: #fff;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04) inset;
+    }
+
+    .product-thumb img {
+      width: 120px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .product-right { flex: 1; min-width: 0; }
+    .form-row {
+      display: flex; align-items: center;
+      gap: 14px; margin: 12px 0;
+    }
+    .form-row label { flex: 0 0 110px; font-weight: 700; }
+    .form-row input, .form-row select {
+      flex: 1; padding: 10px 12px;
+      border: 1px solid #cfd6c3; border-radius: 8px;
+      background: #eef3e6; font-size: 15px;
+      outline: none;
+    }
+    .form-row input:focus {
+      border-color: #9bb081;
+      box-shadow: 0 0 0 3px rgba(155,176,129,.18);
+      background: #fff;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .save-btn {
+      background: var(--green);
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+  
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.button-group button {
+  color: #fff;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+/* 綠色更新鍵 */
+.update-btn {
+  background-color: #606C38 !important;
+}
+.update-btn:hover {
+  background-color: #4C572E !important;
+}
+
+/* 紅色刪除鍵 */
+.delete-btn {
+  background-color: #B84A4A !important;
+}
+.delete-btn:hover {
+  background-color: #A13D3D !important;
+}
+</style>
+
+  </style>
+</head>
+
+<body>
+ <!-- 導覽列 -->
+<div class="navbar">
+  <div class="nav-left">
+    <div class="logo" style="
+      background-color: var(--green);
+      color: white;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;">二手</div>
+
+    <div class="search-box">
+      <input type="text" placeholder="搜尋商品..." />
+      <button>🔍</button>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <div class="dropdown">
+      <a href="#">賣家中心 ▼</a>
+      <div class="dropdown-content">
+        <a href="#" onclick="showTab('add')">刊登商品</a>
+        <a href="#" onclick="showTab('edit')">編輯商品</a>
+        <a href="orders.html">檢視訂單</a>
+        <a href="review.html">評價管理</a>
+      </div>
+    </div>
+
+    <a href="#">訊息</a>
+    <a href="#">購物車</a>
+
+    <!-- ⭐ 只加功能，不改排版 -->
+    <a href="../buyer/buyer.html">買家系統</a>
+    <a href="signup.html">SIGN UP</a>
+    <a href="login.html">LOGIN</a>
+  </div>
+</div>
+
+  <!-- 商品區域 -->
+  <div class="product-container">
+
+    <!-- 刊登商品 -->
+    <div id="tab-add" class="tab-content active">
+      <div class="product-card">
+        <div class="product-left">
+          <div class="featured">刊登商品</div>
+          <div class="product-thumb">
+            <img src="shop.png" alt="shop second hand">
+          </div>
+        </div>
+        <div class="product-right">
+          <div class="form-row">
+            <label>商品名稱：</label>
+            <input type="text" id="add-name" placeholder="輸入商品名稱…">
+          </div>
+          <div class="form-row">
+            <label>商品簡介：</label>
+            <input type="text" id="add-desc" placeholder="輸入商品說明…">
+          </div>
+          <div class="form-row">
+            <label>售價：</label>
+            <input type="text" id="add-price" placeholder="輸入售價">
+          </div>
+          <div class="actions">
+            <button class="save-btn" onclick="saveProduct()">儲存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 編輯商品 -->
+    <div id="tab-edit" class="tab-content">
+      <div class="product-card">
+        <div class="product-left">
+          <div class="featured">編輯商品</div>
+          <div class="product-thumb">
+            <img src="shop.png" alt="shop second hand">
+          </div>
+        </div>
+        <div class="product-right">
+          <div class="form-row">
+            <label>選擇商品：</label>
+            <select id="edit-select" onchange="loadProductToEdit()">
+              <option value="">請選擇商品</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>商品名稱：</label>
+            <input type="text" id="edit-name" placeholder="輸入新商品名稱">
+          </div>
+          <div class="form-row">
+            <label>商品簡介：</label>
+            <input type="text" id="edit-desc" placeholder="輸入新商品說明">
+          </div>
+          <div class="form-row">
+            <label>售價：</label>
+            <input type="text" id="edit-price" placeholder="輸入新售價">
+          </div>
+          <div class="button-group">
+  <button class="update-btn">更新</button>
+  <button class="delete-btn">刪除</button>
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+  // === 模擬商品資料 ===
+  let products = [];
+
+  // === 初始化 ===
+  document.addEventListener("DOMContentLoaded", () => {
+    renderProductOptions();
+  });
+
+  // === 刊登商品（儲存新商品） ===
+  function saveProduct() {
+    const name = document.getElementById("add-name").value.trim();
+    const desc = document.getElementById("add-desc").value.trim();
+    const price = document.getElementById("add-price").value.trim();
+
+    if (!name || !desc || !price) {
+      alert("請完整輸入商品資料！");
+      return;
+    }
+
+    // 新增商品
+    products.push({ name, desc, price });
+    alert(`✅ 商品「${name}」已新增！`);
+
+    // 清空欄位
+    document.getElementById("add-name").value = "";
+    document.getElementById("add-desc").value = "";
+    document.getElementById("add-price").value = "";
+
+    // 更新下拉選單
+    renderProductOptions();
+  }
+
+  // === 重新渲染編輯商品下拉選單 ===
+  function renderProductOptions() {
+    const select = document.getElementById("edit-select");
+    select.innerHTML = '<option value="">請選擇商品</option>';
+    products.forEach((p, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = p.name;
+      select.appendChild(opt);
+    });
+  }
+
+  // === 載入商品資料到輸入欄 ===
+  function loadProductToEdit() {
+    const select = document.getElementById("edit-select");
+    const index = select.value;
+
+    if (index === "") {
+      document.getElementById("edit-name").value = "";
+      document.getElementById("edit-desc").value = "";
+      document.getElementById("edit-price").value = "";
+      return;
+    }
+
+    const product = products[index];
+    document.getElementById("edit-name").value = product.name;
+    document.getElementById("edit-desc").value = product.desc;
+    document.getElementById("edit-price").value = product.price;
+  }
+
+  // === 更新商品 ===
+  document.querySelector(".update-btn").addEventListener("click", () => {
+    const select = document.getElementById("edit-select");
+    const index = select.value;
+
+    if (index === "") {
+      alert("請先選擇要更新的商品！");
+      return;
+    }
+
+    const newName = document.getElementById("edit-name").value.trim();
+    const newDesc = document.getElementById("edit-desc").value.trim();
+    const newPrice = document.getElementById("edit-price").value.trim();
+
+    if (!newName || !newDesc || !newPrice) {
+      alert("請完整填寫所有欄位！");
+      return;
+    }
+
+    // 更新商品資料
+    products[index] = { name: newName, desc: newDesc, price: newPrice };
+    alert(`✅ 商品「${newName}」已更新！`);
+
+    // 重新更新選單顯示
+    renderProductOptions();
+    document.getElementById("edit-select").value = index;
+  });
+
+  // === 刪除商品 ===
+  document.querySelector(".delete-btn").addEventListener("click", () => {
+    const select = document.getElementById("edit-select");
+    const index = select.value;
+
+    if (index === "") {
+      alert("請先選擇要刪除的商品！");
+      return;
+    }
+
+    const productName = products[index].name;
+    if (confirm(`確定要刪除「${productName}」嗎？`)) {
+      products.splice(index, 1);
+      alert(`🗑️ 「${productName}」已刪除！`);
+      renderProductOptions();
+
+      // 清空欄位
+      document.getElementById("edit-name").value = "";
+      document.getElementById("edit-desc").value = "";
+      document.getElementById("edit-price").value = "";
+    }
+  });
+
+  // === 分頁切換 ===
+  function showTab(tab) {
+    document.querySelectorAll(".tab-content").forEach(div => {
+      div.classList.remove("active");
+    });
+    document.getElementById("tab-" + tab).classList.add("active");
+  }
+</script>
+
+
+
+
+
+
+
+</body>
+</html>
+
