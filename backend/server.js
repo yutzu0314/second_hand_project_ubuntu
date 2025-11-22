@@ -3,7 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import mysql from 'mysql2/promise';
+import pool from './db.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 
@@ -36,17 +36,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // -------------------- 掛載 Swagger UI --------------------
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/openapi.json', (_req, res) => res.json(swaggerSpec));
-
-
-// MySQL
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT || 3310),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    connectionLimit: 10
-});
 
 // -------------------- 靜態頁 --------------------
 app.use('/login', express.static(path.join(__dirname, 'public/login')));
@@ -717,6 +706,17 @@ app.post('/api/users/:id/reset-password', async (req, res) => {
 
 
 
+// -------------------- 掛載你的交易/商品 routes --------------------
+import ordersRouter from './routes/orders.js';
+import productsRouter from './routes/products.js';
+
+app.use('/api/order', ordersRouter);
+app.use('/api/products', productsRouter);
+
 // -------------------- 啟動 --------------------
 const port = Number(process.env.PORT || 3000);
-app.listen(port, () => console.log('Backend running on :' + port));
+
+(async () => {
+  await detectUserColumns(); // 先偵測欄位
+  app.listen(port, () => console.log('Backend running on :' + port));
+})();
