@@ -133,7 +133,7 @@ app.post('/admin/login', async (req, res) => {
             return res.status(403).json({ error: '沒有後台權限' });
         }
 
-        res.json({ token: 'DEV_TOKEN', id: u.id, email: u.email, role: u.role ?? 'admin' });
+        res.json({ token: 'DEV_TOKEN', id: u.id, email: u.email, role: (u.role != null ? u.role : 'admin') });
     } catch (e) {
         console.error('POST /admin/login', e);
         res.status(500).json({ error: 'Server error' });
