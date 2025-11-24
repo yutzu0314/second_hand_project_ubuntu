@@ -43,12 +43,14 @@ app.use('/admin', express.static(path.join(__dirname, 'public/admin')));
 app.use('/buyer', express.static(path.join(__dirname, 'public/buyer')));
 app.use('/seller', express.static(path.join(__dirname, 'public/seller')));
 app.use('/sign', express.static(path.join(__dirname, 'public/sign')));
-app.get('/', (req, res) => res.redirect('/login'));
+app.get('/login', (req, res) => res.redirect('/login/login.html'));
+
 
 // -------------------- 動態偵測欄位 --------------------
 let ID_COL = 'id';
 let PASS_COL = 'password';          // 若只有 password_hash 也會自動切過去
 let NAME_COL = 'name';
+let EMAIL_COL = 'email';
 let ROLE_COL = 'role';
 let STATUS_COL = null;              // 有就用，沒有就當 active
 let CREATED_COL = 'created_at';
@@ -63,9 +65,10 @@ async function detectUserColumns() {
     ROLE_COL = set.has('role') ? 'role' : null;
     STATUS_COL = set.has('status') ? 'status' : null;
     CREATED_COL = set.has('created_at') ? 'created_at' : (set.has('create_time') ? 'create_time' : null);
+    EMAIL_COL = set.has('email') ? 'email' : null;
 
     console.log('[users columns]',
-        { ID_COL, PASS_COL, NAME_COL, ROLE_COL, STATUS_COL, CREATED_COL });
+        { ID_COL, PASS_COL, NAME_COL, ROLE_COL, STATUS_COL, CREATED_COL, EMAIL_COL });
 }
 
 // 啟動前偵測一次
@@ -140,29 +143,57 @@ app.post('/admin/login', async (req, res) => {
     }
 });
 
-
-// 共用：一般登入檢查（指定角色）
+// 共用：一般登入檢查（支援 name 或 email，不用 user_id）
 async function simpleLogin(req, res, roleWanted) {
-    const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ error: '缺少 email 或 password' });
+    const { name, email, password } = req.body || {};
 
-    // 用前面偵測到的欄位名稱
-    const [rows] = await pool.query(
-        `SELECT \`${ID_COL}\` AS id, email, \`${PASS_COL}\` AS pwd
-            ${ROLE_COL ? `, \`${ROLE_COL}\` AS role` : `, 'buyer' AS role`}
-            ${STATUS_COL ? `, \`${STATUS_COL}\` AS status` : `, 'active' AS status`}
-        FROM users WHERE email = ? LIMIT 1`,
-        [email]
-    );
+    // 至少要有 name 或 email + password
+    if ((!name && !email) || !password) {
+        return res.status(400).json({ error: '缺少 name/email 或 password' });
+    }
+
+    // ✅ 用 name 或 email 查（兩者都給就 email 優先）
+    const keyField = email ? EMAIL_COL : NAME_COL;
+    const keyValue = email || name;
+
+    if (!keyField) {
+        return res.status(500).json({ error: 'users 表沒有 name 或 email 欄位' });
+    }
+
+    const sql = `
+    SELECT 
+      \`${ID_COL}\` AS id,
+      ${EMAIL_COL ? `\`${EMAIL_COL}\` AS email,` : `'N/A' AS email,`}
+      ${NAME_COL ? `\`${NAME_COL}\` AS name,` : `'N/A' AS name,`}
+      \`${PASS_COL}\` AS pwd
+      ${ROLE_COL ? `, \`${ROLE_COL}\` AS role` : `, '${roleWanted || 'buyer'}' AS role`}
+      ${STATUS_COL ? `, \`${STATUS_COL}\` AS status` : `, 'active' AS status`}
+    FROM users
+    WHERE \`${keyField}\` = ?
+    LIMIT 1
+  `;
+
+    const [rows] = await pool.query(sql, [keyValue]);
     const u = rows[0];
+
     if (!u) return res.status(401).json({ error: '帳號不存在' });
     if (u.pwd !== password) return res.status(401).json({ error: '密碼錯誤' });
     if (u.status !== 'active') return res.status(403).json({ error: '帳號未啟用或已停用' });
-    if (roleWanted && ROLE_COL && u.role !== roleWanted)
-        return res.status(403).json({ error: `需要 ${roleWanted} 身分` });
 
-    res.json({ success: true, token: 'DEV_TOKEN', id: u.id, role: u.role });
+    if (roleWanted && ROLE_COL && u.role !== roleWanted) {
+        return res.status(403).json({ error: `需要 ${roleWanted} 身分` });
+    }
+
+    return res.json({
+        success: true,
+        token: 'DEV_TOKEN',
+        id: u.id,
+        role: u.role,
+        email: u.email,
+        name: u.name
+    });
 }
+
 
 /**
  * @openapi
@@ -717,6 +748,6 @@ app.use('/api/products', productsRouter);
 const port = Number(process.env.PORT || 3000);
 
 (async () => {
-  await detectUserColumns(); // 先偵測欄位
-  app.listen(port, () => console.log('Backend running on :' + port));
+    await detectUserColumns(); // 先偵測欄位
+    app.listen(port, () => console.log('Backend running on :' + port));
 })();

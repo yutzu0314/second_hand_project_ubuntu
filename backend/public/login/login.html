@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8" />
   <title>登入 - 二手交易平台</title>
@@ -144,6 +145,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="topbar">
@@ -180,74 +182,73 @@
     </form>
   </div>
 
-  <script>
-    const sellerBtn = document.getElementById("sellerBtn");
-    const buyerBtn = document.getElementById("buyerBtn");
-    const adminBtn = document.getElementById("adminBtn");
+<script>
+  const sellerBtn = document.getElementById("sellerBtn");
+  const buyerBtn  = document.getElementById("buyerBtn");
+  const adminBtn  = document.getElementById("adminBtn");
 
-    const errorText = document.getElementById("errorText");
-    const passwordInput = document.getElementById("password");
+  const errorText = document.getElementById("errorText");
+  const passwordInput = document.getElementById("password");
 
-    // 切換 active 樣式
-    function setActive(btn) {
-      sellerBtn.classList.remove("active");
-      buyerBtn.classList.remove("active");
-      adminBtn.classList.remove("active");
-      btn.classList.add("active");
-    }
-
-    sellerBtn.onclick = () => setActive(sellerBtn);
-    buyerBtn.onclick = () => setActive(buyerBtn);
-    adminBtn.onclick = () => setActive(adminBtn);
-
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const user = document.getElementById("username").value.trim();
-      const pass = document.getElementById("password").value.trim();
-
-      let role = "";
-      if (sellerBtn.classList.contains("active")) role = "seller";
-      else if (buyerBtn.classList.contains("active")) role = "buyer";
-      else role = "admin";
-
-      // ⭐ 賣家 → 不檢查帳號密碼
-      if (role === "seller") {
-        window.location.href = "/seller/index.html";
-        return;
-      }
-      // ⭐ 檢查註冊帳號（買家 + 賣家）
-let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-
-if (role === "buyer" || role === "seller") {
-  const found = accounts.find(
-    acc => acc.user === user && acc.pass === pass && acc.role === role
-  );
-
-  if (found) {
-    if (role === "seller") window.location.href = "/seller/index.html";
-    else window.location.href = "/buyer/buyer.html";
-    return;
+  function setActive(btn) {
+    sellerBtn.classList.remove("active");
+    buyerBtn.classList.remove("active");
+    adminBtn.classList.remove("active");
+    btn.classList.add("active");
   }
-}
 
+  sellerBtn.onclick = () => setActive(sellerBtn);
+  buyerBtn.onclick  = () => setActive(buyerBtn);
+  adminBtn.onclick  = () => setActive(adminBtn);
 
-    
+  document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-      // 管理員
-      if (role === "admin") {
-        if (user === "admin" && pass === "admin123") {
-          window.location.href = "/admin/index.html";
-          return;
-        }
-      }
+    const raw = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-      // 錯誤提示
+    // 1) 先決定角色
+    let role = "";
+    if (sellerBtn.classList.contains("active")) role = "seller";
+    else if (buyerBtn.classList.contains("active")) role = "buyer";
+    else role = "admin";
+
+    // 2) 再決定 endpoint
+    const endpoint = role === "admin" ? "/admin/login" : `/${role}/login`;
+
+    // 3) 再決定 payload
+    const payload = raw.includes("@")
+      ? { email: raw, password }
+      : { name: raw, password };
+
+    try {
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "登入失敗");
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user_id", data.id);
+      localStorage.setItem("role", data.role);
+
+      if (role === "seller") window.location.href = "/seller/index.html";
+      else if (role === "buyer") window.location.href = "/buyer/buyer.html";
+      else window.location.href = "/admin/index.html";
+
+    } catch (err) {
+      errorText.textContent = err.message;
       errorText.style.display = "block";
       passwordInput.classList.add("error");
-    });
-  </script>   <!-- ⭐ 你缺少的就是這一行！ -->
+    }
+  });
+</script>
+
+
 
 </body>
-</html>
 
+</html>
