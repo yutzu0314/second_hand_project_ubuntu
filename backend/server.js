@@ -80,7 +80,7 @@ await detectUserColumns();
  * @openapi
  * /admin/login:
  *   post:
- *     summary: 後台管理員登入
+ *     summary: 管理員登入（支援 name 或 email）
  *     tags:
  *       - Admin
  *     requestBody:
@@ -89,59 +89,107 @@ await detectUserColumns();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - password
  *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 管理員名稱（對應 users.name）
+ *                 example: admin001
  *               email:
  *                 type: string
+ *                 description: 管理員 Email（對應 users.email）
  *                 example: admin@example.com
  *               password:
  *                 type: string
+ *                 description: 使用者密碼
  *                 example: 123456
+ *           examples:
+ *             loginByName:
+ *               summary: 使用 name 登入
+ *               value:
+ *                 name: admin001
+ *                 password: "123456"
+ *             loginByEmail:
+ *               summary: 使用 email 登入
+ *               value:
+ *                 email: admin@example.com
+ *                 password: "123456"
  *     responses:
  *       200:
  *         description: 登入成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 id:
+ *                   type: integer
+ *                 role:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
  *       400:
- *         description: 缺少 email 或 password
+ *         description: 缺少 name/email 或 password
  *       401:
  *         description: 帳號不存在或密碼錯誤
  *       403:
- *         description: 帳號未啟用或沒有後台權限
+ *         description: 帳號未啟用或無後台權限
  */
 
 app.post('/admin/login', async (req, res) => {
     try {
-        const { email, password } = req.body || {};
-        if (!email || !password) return res.status(400).json({ error: '缺少 email 或 password' });
+        const { name, email, password } = req.body || {};
+        if ((!name && !email) || !password) {
+            return res.status(400).json({ error: '缺少 name/email 或 password' });
+        }
 
-        // 動態欄位查詢
+        const keyField = email ? EMAIL_COL : NAME_COL;
+        const keyValue = email || name;
+
         const sql = `
-        SELECT
-        \`${ID_COL}\`   AS id,
-        email,
+      SELECT
+        \`${ID_COL}\` AS id,
+        ${EMAIL_COL ? `\`${EMAIL_COL}\` AS email,` : `'N/A' AS email,`}
+        ${NAME_COL ? `\`${NAME_COL}\` AS name,` : `'N/A' AS name,`}
         \`${PASS_COL}\` AS pwd
         ${ROLE_COL ? `, \`${ROLE_COL}\` AS role` : `, 'admin' AS role`}
         ${STATUS_COL ? `, \`${STATUS_COL}\` AS status` : `, 'active' AS status`}
-        FROM users
-        WHERE email = ?
-        LIMIT 1
-        `;
-        const [rows] = await pool.query(sql, [email]);
+      FROM users
+      WHERE \`${keyField}\` = ?
+      LIMIT 1
+    `;
+
+        const [rows] = await pool.query(sql, [keyValue]);
         const u = rows[0];
+
         if (!u) return res.status(401).json({ error: '帳號不存在' });
+        if (u.pwd !== password) return res.status(401).json({ error: '密碼錯誤' });
         if (u.status !== 'active') return res.status(403).json({ error: '帳號未啟用或已停用' });
 
-        // 先明碼比對（之後再換成 bcrypt.compare(password, password_hash)）
-        if (u.pwd !== password) return res.status(401).json({ error: '密碼錯誤' });
-        // 若沒有 role 欄位就視為 admin；有 role 就檢查
+        // 限制必須是 admin / superadmin
         if (ROLE_COL && !['admin', 'superadmin'].includes(u.role)) {
-            return res.status(403).json({ error: '沒有後台權限' });
+            return res.status(403).json({ error: '沒有後台管理權限' });
         }
 
-        res.json({ token: 'DEV_TOKEN', id: u.id, email: u.email, role: (u.role != null ? u.role : 'admin') });
+        res.json({
+            token: 'DEV_TOKEN',
+            id: u.id,
+            email: u.email,
+            name: u.name,
+            role: u.role
+        });
+
     } catch (e) {
         console.error('POST /admin/login', e);
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 
 // 共用：一般登入檢查（支援 name 或 email，不用 user_id）
 async function simpleLogin(req, res, roleWanted) {
@@ -199,7 +247,7 @@ async function simpleLogin(req, res, roleWanted) {
  * @openapi
  * /buyer/login:
  *   post:
- *     summary: 買家登入
+ *     summary: 買家登入（支援 name 或 email）
  *     tags:
  *       - Auth
  *     requestBody:
@@ -208,18 +256,32 @@ async function simpleLogin(req, res, roleWanted) {
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - password
  *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 使用者名稱（與 users.name 對應）
+ *                 example: user1
  *               email:
  *                 type: string
- *                 example: buyer@example.com
+ *                 description: Email（與 users.email 對應）
+ *                 example: user1@example.com
  *               password:
  *                 type: string
- *                 example: 123456
+ *                 example: 0000
+ *           examples:
+ *             loginByName:
+ *               summary: 用 name 登入
+ *               value: { name: "user1", password: "0000" }
+ *             loginByEmail:
+ *               summary: 用 email 登入
+ *               value: { email: "user1@example.com", password: "0000" }
  *     responses:
  *       200:
  *         description: 登入成功
  *       400:
- *         description: 缺少 email 或 password
+ *         description: 缺少 name/email 或 password
  *       401:
  *         description: 帳號不存在或密碼錯誤
  *       403:
@@ -232,7 +294,7 @@ app.post('/buyer/login', (req, res) => simpleLogin(req, res, 'buyer'));
  * @openapi
  * /seller/login:
  *   post:
- *     summary: 賣家登入
+ *     summary: 賣家登入（支援 name 或 email）
  *     tags:
  *       - Auth
  *     requestBody:
@@ -241,18 +303,32 @@ app.post('/buyer/login', (req, res) => simpleLogin(req, res, 'buyer'));
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - password
  *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 使用者名稱（與 users.name 對應）
+ *                 example: user2
  *               email:
  *                 type: string
- *                 example: seller@example.com
+ *                 description: Email（與 users.email 對應）
+ *                 example: user2@example.com
  *               password:
  *                 type: string
  *                 example: 123456
+ *           examples:
+ *             loginByName:
+ *               summary: 用 name 登入
+ *               value: { name: "user2", password: "123456" }
+ *             loginByEmail:
+ *               summary: 用 email 登入
+ *               value: { email: "user2@example.com", password: "123456" }
  *     responses:
  *       200:
  *         description: 登入成功
  *       400:
- *         description: 缺少 email 或 password
+ *         description: 缺少 name/email 或 password
  *       401:
  *         description: 帳號不存在或密碼錯誤
  *       403:
