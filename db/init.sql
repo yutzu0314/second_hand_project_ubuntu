@@ -42,7 +42,10 @@ CREATE TABLE IF NOT EXISTS moderation_actions (
 
 -- seeding：一個管理員 + 一個一般用戶
 INSERT IGNORE INTO users (email, password, name, role, status)
-VALUES ('admin@example.com','123456','管理員','admin','active');
+VALUES ('admin@example.com','123456','admin','admin','active');
 
 INSERT IGNORE INTO users (email, password, name, role, status)
-VALUES ('user1@example.com','0000','用戶一','buyer','active');
+VALUES ('buyer1@example.com','0000','buyer1','buyer','active');
+
+INSERT IGNORE INTO users (email, password, name, role, status)
+VALUES ('seller1@example.com','0000','seller1','seller','active');
