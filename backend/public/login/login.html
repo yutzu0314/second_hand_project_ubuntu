@@ -182,70 +182,94 @@
     </form>
   </div>
 
-<script>
-  const sellerBtn = document.getElementById("sellerBtn");
-  const buyerBtn  = document.getElementById("buyerBtn");
-  const adminBtn  = document.getElementById("adminBtn");
+  <script>
+    const sellerBtn = document.getElementById("sellerBtn");
+    const buyerBtn = document.getElementById("buyerBtn");
+    const adminBtn = document.getElementById("adminBtn");
 
-  const errorText = document.getElementById("errorText");
-  const passwordInput = document.getElementById("password");
+    const errorText = document.getElementById("errorText");
+    const passwordInput = document.getElementById("password");
 
-  function setActive(btn) {
-    sellerBtn.classList.remove("active");
-    buyerBtn.classList.remove("active");
-    adminBtn.classList.remove("active");
-    btn.classList.add("active");
-  }
-
-  sellerBtn.onclick = () => setActive(sellerBtn);
-  buyerBtn.onclick  = () => setActive(buyerBtn);
-  adminBtn.onclick  = () => setActive(adminBtn);
-
-  document.getElementById("loginForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const raw = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    // 1) 先決定角色
-    let role = "";
-    if (sellerBtn.classList.contains("active")) role = "seller";
-    else if (buyerBtn.classList.contains("active")) role = "buyer";
-    else role = "admin";
-
-    // 2) 再決定 endpoint
-    const endpoint = role === "admin" ? "/admin/login" : `/${role}/login`;
-
-    // 3) 再決定 payload
-    const payload = raw.includes("@")
-      ? { email: raw, password }
-      : { name: raw, password };
-
-    try {
-      const resp = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "登入失敗");
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user_id", data.id);
-      localStorage.setItem("role", data.role);
-
-      if (role === "seller") window.location.href = "/seller/index.html";
-      else if (role === "buyer") window.location.href = "/buyer/buyer.html";
-      else window.location.href = "/admin/index.html";
-
-    } catch (err) {
-      errorText.textContent = err.message;
-      errorText.style.display = "block";
-      passwordInput.classList.add("error");
+    function setActive(btn) {
+      sellerBtn.classList.remove("active");
+      buyerBtn.classList.remove("active");
+      adminBtn.classList.remove("active");
+      btn.classList.add("active");
     }
-  });
-</script>
+
+    sellerBtn.onclick = () => setActive(sellerBtn);
+    buyerBtn.onclick = () => setActive(buyerBtn);
+    adminBtn.onclick = () => setActive(adminBtn);
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const raw = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      // 1) 先決定角色
+      let role = "";
+      if (sellerBtn.classList.contains("active")) role = "seller";
+      else if (buyerBtn.classList.contains("active")) role = "buyer";
+      else role = "admin";
+
+      // 2) 再決定 endpoint
+      const endpoint = role === "admin" ? "/admin/login" : `/${role}/login`;
+
+      // 3) 再決定 payload
+      const payload = raw.includes("@")
+        ? { email: raw, password }
+        : { name: raw, password };
+
+      try {
+        const resp = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "登入失敗");
+
+        // 先清掉舊的，避免之前測試遺留奇怪的值
+        localStorage.removeItem("auth");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+
+        // 基本欄位（舊版用的）
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user_id", String(data.id));
+        localStorage.setItem("role", data.role || role);
+        localStorage.setItem("email", data.email || "");
+
+        // 新欄位（新版 buyer.js / seller.js 會用）
+        const auth = {
+          id: data.id,
+          email: data.email,
+          role: data.role || role,
+          token: data.token,
+          name: data.name
+        };
+        localStorage.setItem("auth", JSON.stringify(auth));
+
+        // 導頁
+        if (role === "seller") {
+          window.location.href = "/seller/index.html";
+        } else if (role === "buyer") {
+          window.location.href = "/buyer/buyer.html";
+        } else {
+          window.location.href = "/admin/index.html";
+        }
+
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorText.style.display = "block";
+        passwordInput.classList.add("error");
+      }
+    });
+  </script>
 
 
 

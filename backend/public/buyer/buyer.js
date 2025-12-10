@@ -1,67 +1,93 @@
-// === 模擬商品資料（之後可由賣家系統提供） ===
-const products = [
-  {
-    name: "iPhone 13",
-    price: 19000,
-    img: "images/iphone13.png",
-    tag: "精選商品",
-    seller: "SELLER A"
-  },
-  {
-    name: "Switch 主機",
-    price: 8500,
-    img: "images/switch.png",
-    tag: "精選商品",
-    seller: "SELLER B"
-  },
-  {
-    name: "AirPods Pro",
-    price: 4500,
-    img: "images/airpods.png",
-    tag: "最新上架",
-    seller: "SELLER C"
-  },
-  {
-    name: "MacBook Air",
-    price: 28000,
-    img: "images/macbook.png",
-    tag: "熱銷商品",
-    seller: "SELLER D"
-  }
-];
+// buyer.js
 
+/// ==== 讀取登入資訊（買家） ====
+let currentUser = null;
+
+function loadCurrentUser() {
+  try {
+    // 優先用 auth
+    const raw = localStorage.getItem("auth");
+    if (raw && raw !== "null" && raw !== "undefined") {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.id && (parsed.role === "buyer" || parsed.role === "seller")) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error("parse auth failed", e);
+  }
+
+  // 如果沒有 auth，就退回舊欄位（user_id / role）
+  const idStr = localStorage.getItem("user_id");
+  const role = localStorage.getItem("role");
+  const email = localStorage.getItem("email") || null;
+
+  if (idStr && role === "buyer") {
+    return {
+      id: Number(idStr),
+      email,
+      role,
+      token: localStorage.getItem("token") || null,
+      name: null,
+    };
+  }
+
+  return null;
+}
+
+currentUser = loadCurrentUser();
+console.log("buyer.js currentUser =", currentUser);
+
+
+const API_BASE = ""; // 跟後端同網域就留空
+
+let products = [];
 const productList = document.getElementById("productList");
 
-// === 渲染商品 ===
+// ================= 商品列表 =================
+
+async function fetchProducts() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/products/list?status=on_sale`);
+    if (!resp.ok) {
+      throw new Error("商品列表載入失敗");
+    }
+    const data = await resp.json(); // { total, items }
+    products = data.items || [];
+    renderProducts(products);
+  } catch (err) {
+    console.error(err);
+    productList.innerHTML = "<p>無法載入商品，請稍後再試。</p>";
+  }
+}
+
+// 用後端欄位渲染商品卡片
 function renderProducts(list) {
   productList.innerHTML = "";
+  if (!list.length) {
+    productList.innerHTML = "<p>目前沒有上架中的商品。</p>";
+    return;
+  }
 
   list.forEach((p) => {
     const card = document.createElement("div");
     card.classList.add("product-card");
-
     card.innerHTML = `
-      <div class="seller">
-        <img src="images/user.png" alt="seller">
-        <p>${p.seller}</p>
+      <div class="product-img">
+        <img src="${p.cover_image_url || "images/default.png"}" alt="${p.title}">
       </div>
-
-      <div class="product-info">
-        <div class="tag">${p.tag}</div>
-        <img src="${p.img}" alt="${p.name}">
-        <h3>${p.name}</h3>
-        <p class="price">NT$ ${p.price}</p>
-        <button class="save-btn">加入購物車</button>
-      </div>
+      <div class="product-tag">賣家 ID：${p.seller_id}</div>
+      <h3>${p.title}</h3>
+      <p class="price">NT$ ${p.price}</p>
+      <button class="save-btn" data-id="${p.product_id}">加入購物車</button>
     `;
-
     productList.appendChild(card);
   });
 }
 
-renderProducts(products);
+fetchProducts();
 
-// === 購物車 ===
+// ================= 購物車 =================
 let cart = [];
 const cartBtn = document.getElementById("cartBtn");
 const cartCount = document.getElementById("cartCount");
@@ -76,6 +102,7 @@ function updateCartDisplay() {
 
   if (cart.length === 0) {
     cartItems.innerHTML = "<li>目前購物車是空的</li>";
+    cartCount.textContent = "0";
     return;
   }
 
@@ -84,37 +111,40 @@ function updateCartDisplay() {
     li.textContent = `${item.name} - NT$${item.price}`;
     cartItems.appendChild(li);
   });
+
+  cartCount.textContent = String(cart.length);
 }
 
 // === 加入購物車 ===
 document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("save-btn")) {
-    const card = e.target.closest(".product-card");
-    const name = card.querySelector("h3").textContent;
+  if (!e.target.classList.contains("save-btn")) return;
 
-    // 價格處理（轉為數字）
-    const priceText = card.querySelector(".price").textContent.replace("NT$", "").trim();
-    const price = parseInt(priceText);
+  const productId = Number(e.target.dataset.id);
+  const product = products.find((p) => p.product_id === productId);
+  if (!product) return;
 
-    // 格式統一
-    cart.push({ name, price, qty: 1 });
+  cart.push({
+    product_id: product.product_id,
+    name: product.title,
+    price: product.price,
+    seller_id: product.seller_id,
+  });
 
-    cartCount.textContent = cart.length;
+  updateCartDisplay();
 
-    // 顯示提示 modal
-    const addedModal = document.getElementById("addedModal");
-    addedModal.classList.remove("hidden");
+  // 顯示提示 modal
+  const addedModal = document.getElementById("addedModal");
+  addedModal.classList.remove("hidden");
 
-    document.getElementById("continueShopping").onclick = () => {
-      addedModal.classList.add("hidden");
-    };
+  document.getElementById("continueShopping").onclick = () => {
+    addedModal.classList.add("hidden");
+  };
 
-    document.getElementById("goToCheckout").onclick = () => {
-      addedModal.classList.add("hidden");
-      updateCartDisplay();
-      checkoutModal.classList.remove("hidden");
-    };
-  }
+  document.getElementById("goToCheckout").onclick = () => {
+    addedModal.classList.add("hidden");
+    updateCartDisplay();
+    checkoutModal.classList.remove("hidden");
+  };
 });
 
 // === 打開購物車 ===
@@ -130,38 +160,73 @@ closeModal.addEventListener("click", () => {
 });
 
 // === 確認下單 ===
-confirmOrder.addEventListener("click", () => {
+confirmOrder.addEventListener("click", async () => {
+  if (!currentUser) {
+    alert("請先登入買家帳號再下單");
+    return;
+  }
   if (cart.length === 0) {
-    alert("🛒 購物車是空的！");
+    alert("購物車是空的！");
     return;
   }
 
-  const order = {
-    id: Date.now(),
-    items: [...cart],
-    status: "已下單",
-    date: new Date().toLocaleString()
-  };
+  try {
+    const createdOrders = [];
 
-  const orders = JSON.parse(localStorage.getItem("orders")) || [];
-  orders.push(order);
-  localStorage.setItem("orders", JSON.stringify(orders));
+    for (const item of cart) {
+      const resp = await fetch(`${API_BASE}/api/order/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // 如果之後有 token，要一起帶：
+          // "Authorization": `Bearer ${auth.token}`,
+        },
+        body: JSON.stringify({
+          buyer_id: currentUser.id,
+          product_id: item.product_id,
+        }),
+      });
 
-  alert("✅ 訂單已送出！你可以到『訂單追蹤』查看");
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        console.error("create order fail", err);
+        alert(`有一筆訂單建立失敗：${err.error || resp.status}`);
+        continue;
+      }
 
-  cart = [];
-  cartCount.textContent = 0;
+      const order = await resp.json();
+      createdOrders.push(order);
+    }
 
-  updateCartDisplay();
-  checkoutModal.classList.add("hidden");
+    alert(`✅ 訂單已送出，共 ${createdOrders.length} 筆。\n可到「訂單追蹤」查看。`);
+
+    // 清空購物車
+    cart = [];
+    updateCartDisplay();
+    checkoutModal.classList.add("hidden");
+
+    // 可選：暫存最後建立的訂單資訊
+    localStorage.setItem("lastCreatedOrders", JSON.stringify(createdOrders));
+  } catch (e) {
+    console.error(e);
+    alert("建立訂單時發生錯誤，請稍後再試");
+  }
 });
 
 // === 搜尋功能 ===
 document.getElementById("searchBtn").addEventListener("click", () => {
-  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+  const keyword = document
+    .getElementById("searchInput")
+    .value.trim()
+    .toLowerCase();
+
+  if (!keyword) {
+    renderProducts(products);
+    return;
+  }
 
   const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(keyword)
+    (p.title || "").toLowerCase().includes(keyword)
   );
 
   renderProducts(filtered);

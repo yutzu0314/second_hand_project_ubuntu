@@ -9,8 +9,35 @@ function httpError(res, status, message) {
 }
 
 /**
- * POST /api/order/create
- * body: { buyer_id, product_id }
+ * @swagger
+ * tags:
+ *   name: Orders
+ *   description: 訂單相關 API
+ */
+
+/**
+ * @swagger
+ * /api/order/create:
+ *   post:
+ *     summary: 建立訂單（買家下單）
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - buyer_id
+ *               - product_id
+ *             properties:
+ *               buyer_id:
+ *                 type: integer
+ *               product_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 訂單建立成功
  */
 router.post("/create", async (req, res) => {
   const { buyer_id, product_id } = req.body;
@@ -70,8 +97,28 @@ router.post("/create", async (req, res) => {
 });
 
 /**
- * PUT /api/order/confirm
- * body: { order_id, seller_id }
+ * @swagger
+ * /api/order/confirm:
+ *   put:
+ *     summary: 賣家確認訂單
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - order_id
+ *               - seller_id
+ *             properties:
+ *               order_id:
+ *                 type: integer
+ *               seller_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 訂單已確認
  */
 router.put("/confirm", async (req, res) => {
   const { order_id, seller_id } = req.body;
@@ -149,8 +196,28 @@ router.put("/confirm", async (req, res) => {
 });
 
 /**
- * PUT /api/order/finish
- * body: { order_id, by_user_id }
+ * @swagger
+ * /api/order/finish:
+ *   put:
+ *     summary: 完成訂單（買家或賣家）
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - order_id
+ *               - by_user_id
+ *             properties:
+ *               order_id:
+ *                 type: integer
+ *               by_user_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 訂單已完成
  */
 router.put("/finish", async (req, res) => {
   const { order_id, by_user_id } = req.body;
@@ -207,8 +274,28 @@ router.put("/finish", async (req, res) => {
 });
 
 /**
- * PUT /api/order/cancel
- * body: { order_id, by_user_id }
+ * @swagger
+ * /api/order/cancel:
+ *   put:
+ *     summary: 取消訂單（買家或賣家）
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - order_id
+ *               - by_user_id
+ *             properties:
+ *               order_id:
+ *                 type: integer
+ *               by_user_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 訂單已取消
  */
 router.put("/cancel", async (req, res) => {
   const { order_id, by_user_id } = req.body;
@@ -277,7 +364,37 @@ router.put("/cancel", async (req, res) => {
 });
 
 /**
- * GET /api/order/list?buyer_id=&seller_id=&status=&limit=&offset=
+ * @swagger
+ * /api/order/list:
+ *   get:
+ *     summary: 取得訂單列表
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: query
+ *         name: buyer_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: seller_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *     responses:
+ *       200:
+ *         description: 成功取得訂單列表
  */
 router.get("/list", async (req, res) => {
   const { buyer_id, seller_id, status, limit = 20, offset = 0 } = req.query;
@@ -293,14 +410,25 @@ router.get("/list", async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      `SELECT o.*, p.title AS product_title, p.price AS product_price, p.cover_image_url AS product_cover
+      `SELECT 
+          o.*,
+          p.title AS product_title,
+          p.price AS product_price,
+          p.cover_image_url AS product_cover,
+          ub.name  AS buyer_name,
+          ub.email AS buyer_email,
+          us.name  AS seller_name,
+          us.email AS seller_email
        FROM orders o
        JOIN products p ON p.product_id = o.product_id
+       JOIN users ub ON ub.id = o.buyer_id
+       JOIN users us ON us.id = o.seller_id
        ${whereSql}
        ORDER BY o.order_id DESC
        LIMIT ? OFFSET ?`,
       [...params, Number(limit), Number(offset)]
     );
+
 
     const [countRows] = await pool.query(
       `SELECT COUNT(*) as total FROM orders o ${whereSql}`,

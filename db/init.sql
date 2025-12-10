@@ -9,12 +9,16 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS products (
-  product_id INT AUTO_INCREMENT PRIMARY KEY,
-  seller_id  INT NOT NULL,
-  title      VARCHAR(200) NOT NULL,
-  status     ENUM('on_sale','sold','removed','reported') DEFAULT 'on_sale',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (seller_id) REFERENCES users(user_id)
+  product_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  seller_id INT UNSIGNED NOT NULL,
+  buyer_id INT UNSIGNED NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  price INT UNSIGNED NOT NULL,
+  status ENUM('on_sale', 'sold', 'removed', 'reported') NOT NULL DEFAULT 'on_sale',
+  cover_image_url VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  sold_at DATETIME NULL
 );
 
 CREATE TABLE IF NOT EXISTS reports (
@@ -38,6 +42,36 @@ CREATE TABLE IF NOT EXISTS moderation_actions (
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (report_id) REFERENCES reports(report_id),
   FOREIGN KEY (admin_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  order_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  product_id   INT UNSIGNED NOT NULL,
+  buyer_id     INT UNSIGNED NOT NULL,
+  seller_id    INT UNSIGNED NOT NULL,
+  order_price  INT UNSIGNED NOT NULL,
+  status       ENUM('pending','confirmed','completed','cancelled') NOT NULL DEFAULT 'pending',
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  confirmed_at DATETIME NULL,
+  finished_at  DATETIME NULL,
+  canceled_at  DATETIME NULL,
+  PRIMARY KEY (order_id),
+  KEY idx_buyer_id (buyer_id),
+  KEY idx_seller_id (seller_id),
+  KEY idx_product_id (product_id)
+
+);
+
+CREATE TABLE IF NOT EXISTS order_status_logs (
+  log_id      INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id    INT UNSIGNED NOT NULL,
+  from_status VARCHAR(20) NULL,
+  to_status   VARCHAR(20) NOT NULL,
+  changed_by  INT UNSIGNED NOT NULL,
+  note        VARCHAR(255) NULL,
+  changed_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (log_id),
+  KEY idx_order_id (order_id)
 );
 
 -- seeding：一個管理員 + 一個一般用戶

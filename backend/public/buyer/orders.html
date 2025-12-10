@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,161 +55,218 @@
   </div>
 
 
-<!-- ===== SCRIPT START ===== -->
-<script>
-  const orders = JSON.parse(localStorage.getItem("orders")) || [];
-  const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
-  let chats = JSON.parse(localStorage.getItem("chats")) || {};
+  <!-- ===== SCRIPT START ===== -->
+  <script>
+    // ==== 讀取登入中的買家 ====
+    function loadCurrentUser() {
+      try {
+        const raw = localStorage.getItem("auth");
+        if (raw && raw !== "null" && raw !== "undefined") {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.id && parsed.role === "buyer") {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.error("parse auth failed", e);
+      }
 
-  const container = document.getElementById("orderContainer");
-  const filterSelect = document.getElementById("orderFilter");
-
-  // ===== 渲染訂單 =====
-  function renderOrders(filter = "all") {
-    container.innerHTML = "";
-
-    if (orders.length === 0) {
-      container.innerHTML = "<p>目前沒有訂單。</p>";
-      return;
+      const idStr = localStorage.getItem("user_id");
+      const role = localStorage.getItem("role");
+      const email = localStorage.getItem("email") || null;
+      if (idStr && role === "buyer") {
+        return {
+          id: Number(idStr),
+          email,
+          role,
+          token: localStorage.getItem("token") || null,
+        };
+      }
+      return null;
     }
 
-    // 新 → 舊
-    const sorted = [...orders].sort((a, b) => b.id - a.id);
+    const currentUser = loadCurrentUser();
 
-    const filtered = sorted.filter(order => {
-      const reviewed = reviews.some(r => r.orderId === order.id);
-      if (filter === "all") return true;
-      if (filter === "reviewed") return reviewed;
-      if (filter === "unreviewed") return !reviewed;
-    });
+    let orders = []; // 從後端抓
+    const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+    let chats = JSON.parse(localStorage.getItem("chats")) || {};
+    // ==== 從後端抓這個買家的訂單 ====
+    async function fetchBuyerOrders() {
+      if (!currentUser) {
+        container.innerHTML = "<p>請先登入買家帳號再查看訂單。</p>";
+        return;
+      }
 
-    if (filtered.length === 0) {
-      container.innerHTML = "<p>沒有符合條件的訂單。</p>";
-      return;
+      try {
+        const params = new URLSearchParams({ buyer_id: currentUser.id });
+        const res = await fetch(`/api/order/list?` + params.toString());
+        if (!res.ok) throw new Error("載入訂單失敗");
+        const data = await res.json();
+        orders = data.items || [];
+        renderOrders(filterSelect.value || "all");
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = "<p>載入訂單時發生錯誤，請稍後再試。</p>";
+      }
     }
 
-    filtered.forEach(order => {
-      const reviewed = reviews.some(r => r.orderId === order.id);
 
-      // ★ 修正：取商品名稱
-      const productNames = order.items.map(i => i.name).join("、");
+    const container = document.getElementById("orderContainer");
+    const filterSelect = document.getElementById("orderFilter");
 
-      const div = document.createElement("div");
-      div.classList.add("product-card");
+    // ===== 渲染訂單 =====
+    function renderOrders(filter = "all") {
+      container.innerHTML = "";
 
-      div.innerHTML = `
-        <h3>訂單編號：${order.id}</h3>
-        <p>下單時間：${order.date}</p>
-        <p>狀態：<strong>${order.status}</strong></p>
-        <p class="items">商品內容：${productNames}</p>
+      if (!orders.length) {
+        container.innerHTML = "<p>目前沒有訂單。</p>";
+        return;
+      }
 
-        <button class="save-btn review-btn"
-                data-id="${order.id}"
-                ${reviewed ? "disabled" : ""}>
-          ${reviewed ? "已評價" : "去評價"}
-        </button>
+      // 新 → 舊
+      const sorted = [...orders].sort((a, b) => b.order_id - a.order_id);
 
-        <button class="save-btn contact-btn" 
-                data-id="${order.id}"
-                data-items="${productNames}">
-          聯絡賣家
-        </button>
-      `;
+      const filtered = sorted.filter((order) => {
+        const reviewed = reviews.some(r => r.orderId === order.order_id);
+        if (filter === "all") return true;
+        if (filter === "reviewed") return reviewed;
+        if (filter === "unreviewed") return !reviewed;
+      });
 
-      container.appendChild(div);
-    });
-  }
+      if (!filtered.length) {
+        container.innerHTML = "<p>沒有符合條件的訂單。</p>";
+        return;
+      }
 
-  // 初次渲染
-  renderOrders();
+      filtered.forEach(order => {
+        const reviewed = reviews.some(r => r.orderId === order.order_id);
 
-  // ===== 篩選事件 =====
-  filterSelect.addEventListener("change", () => {
-    renderOrders(filterSelect.value);
-  });
+        const div = document.createElement("div");
+        div.classList.add("product-card");
 
+        div.innerHTML = `
+      <h3>訂單編號：${order.order_id}</h3>
+      <p>下單時間：${order.created_at || ""}</p>
+      <p>狀態：<strong>${order.status}</strong></p>
+      <p class="items">商品：${order.product_title}（NT$${order.product_price}）</p>
 
-  // =======================
-  // ===== 聊天功能 =======
-  // =======================
+      <button class="save-btn review-btn"
+              data-id="${order.order_id}"
+              ${reviewed ? "disabled" : ""}>
+        ${reviewed ? "已評價" : "去評價"}
+      </button>
 
-  const chatModal = document.getElementById("chatModal");
-  const chatMessages = document.getElementById("chatMessages");
-  const chatInput = document.getElementById("chatInput");
-  const sendChatBtn = document.getElementById("sendChatBtn");
-  const closeChat = document.getElementById("closeChat");
+      <button class="save-btn contact-btn"
+              data-id="${order.order_id}"
+              data-items="${order.product_title}">
+        聯絡賣家
+      </button>
+    `;
 
-  let currentChatOrderId = null;
-
-  // 打開聊天
-  function openChat(orderId, productNames) {
-    currentChatOrderId = orderId;
-
-    document.getElementById("chatTitle").textContent =
-      "訂單 " + orderId + "｜商品：" + productNames;
-
-    chatModal.classList.remove("hidden");
-    loadChatMessages();
-  }
-
-  // 顯示聊天紀錄
-  function loadChatMessages() {
-    chatMessages.innerHTML = "";
-
-    const msgs = chats[currentChatOrderId] || [];
-
-    msgs.forEach(m => {
-      const div = document.createElement("div");
-      div.classList.add("chat-message");
-      div.classList.add(m.from === "buyer" ? "chat-buyer" : "chat-seller");
-      div.textContent = m.text;
-      chatMessages.appendChild(div);
-    });
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  // 發送聊天訊息
-  sendChatBtn.onclick = () => {
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    if (!chats[currentChatOrderId]) chats[currentChatOrderId] = [];
-
-    chats[currentChatOrderId].push({
-      from: "buyer",
-      text,
-      time: new Date().toLocaleTimeString()
-    });
-
-    localStorage.setItem("chats", JSON.stringify(chats));
-    chatInput.value = "";
-    loadChatMessages();
-  };
-
-  // 關閉聊天
-  closeChat.onclick = () => chatModal.classList.add("hidden");
-
-  // 點擊聯絡賣家
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("contact-btn")) {
-      const orderId = e.target.dataset.id;
-      const productNames = e.target.dataset.items;
-      openChat(orderId, productNames);
+        container.appendChild(div);
+      });
     }
-  });
-// 點擊「去評價」
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("review-btn")) {
-    const orderId = e.target.dataset.id;
-    if (!e.target.disabled) {
-      window.location.href = `rate.html?orderId=${orderId}`;
-    }
-  }
-});
 
-</script>
-<!-- ===== SCRIPT END ===== -->
+    // 初次渲染
+    renderOrders();
+
+    // ===== 篩選事件 =====
+    filterSelect.addEventListener("change", () => {
+      renderOrders(filterSelect.value);
+    });
+
+
+    // =======================
+    // ===== 聊天功能 =======
+    // =======================
+
+    const chatModal = document.getElementById("chatModal");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const sendChatBtn = document.getElementById("sendChatBtn");
+    const closeChat = document.getElementById("closeChat");
+
+    let currentChatOrderId = null;
+
+    // 打開聊天
+    function openChat(orderId, productNames) {
+      currentChatOrderId = orderId;
+
+      document.getElementById("chatTitle").textContent =
+        "訂單 " + orderId + "｜商品：" + productNames;
+
+      chatModal.classList.remove("hidden");
+      loadChatMessages();
+    }
+
+    // 顯示聊天紀錄
+    function loadChatMessages() {
+      chatMessages.innerHTML = "";
+
+      const msgs = chats[currentChatOrderId] || [];
+
+      msgs.forEach(m => {
+        const div = document.createElement("div");
+        div.classList.add("chat-message");
+        div.classList.add(m.from === "buyer" ? "chat-buyer" : "chat-seller");
+        div.textContent = m.text;
+        chatMessages.appendChild(div);
+      });
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 發送聊天訊息
+    sendChatBtn.onclick = () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      if (!chats[currentChatOrderId]) chats[currentChatOrderId] = [];
+
+      chats[currentChatOrderId].push({
+        from: "buyer",
+        text,
+        time: new Date().toLocaleTimeString()
+      });
+
+      localStorage.setItem("chats", JSON.stringify(chats));
+      chatInput.value = "";
+      loadChatMessages();
+    };
+
+    // 關閉聊天
+    closeChat.onclick = () => chatModal.classList.add("hidden");
+
+    // 點擊聯絡賣家
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("contact-btn")) {
+        const orderId = e.target.dataset.id;
+        const productNames = e.target.dataset.items;
+        openChat(orderId, productNames);
+      }
+    });
+    // 點擊「去評價」
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("review-btn")) {
+        const orderId = e.target.dataset.id;
+        if (!e.target.disabled) {
+          window.location.href = `rate.html?orderId=${orderId}`;
+        }
+      }
+    });
+
+    // 初次載入時，先打 API 抓訂單
+    fetchBuyerOrders();
+
+    // 篩選事件保持不變
+    filterSelect.addEventListener("change", () => {
+      renderOrders(filterSelect.value);
+    });
+
+
+  </script>
+  <!-- ===== SCRIPT END ===== -->
 
 </body>
+
 </html>

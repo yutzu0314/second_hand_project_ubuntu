@@ -8,7 +8,48 @@ function httpError(res, status, message) {
 }
 
 /**
- * GET /api/products/list?q=&status=&seller_id=&limit=&offset=
+ * @swagger
+ * tags:
+ *   name: Products
+ *   description: 商品相關 API
+ */
+
+/**
+ * @swagger
+ * /api/products/list:
+ *   get:
+ *     summary: 取得商品列表
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: 關鍵字（會搜尋 title / description）
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           example: on_sale
+ *         description: 商品狀態
+ *       - in: query
+ *         name: seller_id
+ *         schema:
+ *           type: integer
+ *         description: 賣家 ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *     responses:
+ *       200:
+ *         description: 成功取得商品列表
  */
 router.get("/list", async (req, res) => {
   const { q, status, seller_id, limit = 20, offset = 0 } = req.query;
@@ -47,8 +88,38 @@ router.get("/list", async (req, res) => {
 });
 
 /**
- * POST /api/products/create
- * body: { seller_id, title, description, price, status='on_sale', cover_image_url }
+ * @swagger
+ * /api/products/create:
+ *   post:
+ *     summary: 新增商品
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - seller_id
+ *               - title
+ *               - price
+ *             properties:
+ *               seller_id:
+ *                 type: integer
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               status:
+ *                 type: string
+ *                 description: 商品狀態（on_sale / sold / removed / reported）
+ *               cover_image_url:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 商品建立成功
  */
 router.post("/create", async (req, res) => {
   const {
