@@ -14,21 +14,75 @@ body {
   padding: 8px 40px;
 }
 
-.nav-left, .nav-right {
+.nav-left,
+.nav-right {
   display: flex;
   align-items: center;
 }
 
-.nav-left a, .nav-right a {
+.nav-left a,
+.nav-right a {
   color: #2f3b1a;
   text-decoration: none;
   font-size: 15px;
   margin: 0 10px;
 }
 
-.nav-left a:hover, .nav-right a:hover {
+.nav-left a:hover,
+.nav-right a:hover {
   text-decoration: underline;
 }
+
+/* ===== 公告條 ===== */
+.announcement-bar {
+  width: 100%;
+  background-color: #fff8d6;
+  /* 柔和米黃 */
+  border-bottom: 1px solid #e6dca5;
+  padding: 10px 0;
+  text-align: center;
+  color: #6a5d1b;
+  font-size: 17px;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: none;
+  /* 沒公告時不要占位 */
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 置中限制寬度（讓文字長時更好看） */
+.announcement-bar .announcement-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 公告前的圖示 */
+.announcement-bar .icon {
+  margin-right: 8px;
+  color: #d4a017;
+}
+
+/* 滑動跑馬燈效果（可開可關）*/
+.announcement-scroll {
+  animation: scroll-left 12s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 
 /* ===== LOGO 圓形 ===== */
 .logo {
@@ -95,7 +149,7 @@ body {
   position: absolute;
   top: 25px;
   background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   min-width: 120px;
   z-index: 100;
@@ -128,7 +182,8 @@ body {
 
 .product-container {
   display: flex;
-  align-items: center; /* ✅ SELLER與商品卡垂直置中 */
+  align-items: center;
+  /* ✅ SELLER與商品卡垂直置中 */
   background-color: #c4d1b2;
   border-radius: 10px;
   padding: 15px;
@@ -140,7 +195,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* ✅ 垂直置中 */
+  justify-content: center;
+  /* ✅ 垂直置中 */
   width: 150px;
   text-align: center;
   color: #2f3b1a;
@@ -151,12 +207,18 @@ body {
 .seller img {
   width: 120px;
   height: 120px;
-  object-fit: contain;  /* 圖片完整顯示 */
-  background: transparent; /* 沒有白底 */
-  border: none; /* 移除外框 */
-  border-radius: 0; /* 移除圓形外圈 */
-  padding: 0; /* 移除多餘留白 */
-  box-shadow: none; /* 移除陰影 */
+  object-fit: contain;
+  /* 圖片完整顯示 */
+  background: transparent;
+  /* 沒有白底 */
+  border: none;
+  /* 移除外框 */
+  border-radius: 0;
+  /* 移除圓形外圈 */
+  padding: 0;
+  /* 移除多餘留白 */
+  box-shadow: none;
+  /* 移除陰影 */
 }
 
 
@@ -264,8 +326,10 @@ body {
   font-weight: 700;
   display: inline-block;
   position: relative;
-  margin-bottom: 8px;  /* 與圖片的距離 */
-  top: -8px;           /* 向上微調 */
+  margin-bottom: 8px;
+  /* 與圖片的距離 */
+  top: -8px;
+  /* 向上微調 */
 }
 
 
@@ -527,7 +591,8 @@ body {
 .button-group {
   display: flex;
   justify-content: flex-end;
-  gap: 15px; /* 讓兩個按鈕之間有距離 */
+  gap: 15px;
+  /* 讓兩個按鈕之間有距離 */
 }
 
 /* 統一按鈕外觀 */
@@ -547,6 +612,7 @@ body {
 .update-btn {
   background-color: #606C38 !important;
 }
+
 .update-btn:hover {
   background-color: #4C572E !important;
 }
@@ -555,6 +621,7 @@ body {
 .delete-btn {
   background-color: #B84A4A !important;
 }
+
 .delete-btn:hover {
   background-color: #A13D3D !important;
 }

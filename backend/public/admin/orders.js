@@ -48,7 +48,7 @@ function renderOrders(list) {
             <td>${o.buyer_name}（ID: ${o.buyer_id}）</td>
             <td>${o.seller_name}（ID: ${o.seller_id}）</td>
             <td>${o.status}</td>
-            <td>${o.created_at || ""}</td>
+            <td>${formatDateTime(o.created_at)}</td>
             <td>
                 <button class="btn small" data-id="${o.order_id}" data-action="view">查看</button>
             </td>
@@ -76,6 +76,13 @@ function applyFilter() {
     });
 
     renderOrders(filtered);
+}
+
+function formatDateTime(str) {
+    if (!str) return "";
+    // 例: 2025-12-10T02:14:43.000Z
+    // 先去掉毫秒與 Z，再把 T 換成空格
+    return str.replace("T", " ").slice(0, 19); // 2025-12-10 02:14:43
 }
 
 // 事件

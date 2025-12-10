@@ -33,6 +33,58 @@ body {
   text-decoration: underline;
 }
 
+/* ===== 公告條 ===== */
+.announcement-bar {
+  width: 100%;
+  background-color: #fff8d6;
+  /* 柔和米黃 */
+  border-bottom: 1px solid #e6dca5;
+  padding: 10px 0;
+  text-align: center;
+  color: #6a5d1b;
+  font-size: 17px;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: none;
+  /* 沒公告時不要占位 */
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 置中限制寬度（讓文字長時更好看） */
+.announcement-bar .announcement-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 公告前的圖示 */
+.announcement-bar .icon {
+  margin-right: 8px;
+  color: #d4a017;
+}
+
+/* 滑動跑馬燈效果（可開可關）*/
+.announcement-scroll {
+  display: inline-block;
+  animation: scroll-left 12s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+
 /* ===== LOGO 圖片（取代原本圓形） ===== */
 .logo-img {
   height: 60px;
@@ -103,7 +155,7 @@ body {
   position: absolute;
   top: 25px;
   background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   min-width: 130px;
   z-index: 100;
@@ -225,14 +277,16 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .modal.hidden {
   display: none;
 }
+
 .modal-content {
   background: white;
   padding: 20px;
@@ -240,6 +294,7 @@ body {
   width: 300px;
   text-align: center;
 }
+
 /* ===== 加入購物車提示視窗 ===== */
 .modal {
   position: fixed;
@@ -283,6 +338,7 @@ body {
 .modal-content .save-btn:hover {
   background-color: #3b4b1b;
 }
+
 #stars {
   font-size: 26px;
   color: gold;
@@ -299,6 +355,7 @@ body {
   resize: none;
   margin-bottom: 10px;
 }
+
 .review-container {
   width: 80%;
   margin: 30px auto;
@@ -319,7 +376,8 @@ body {
 .stars .active {
   color: gold;
 }
- .review-container {
+
+.review-container {
   width: 80%;
   margin: 30px auto;
   background-color: #eef2e1;
@@ -351,6 +409,7 @@ body {
 .stars span.active {
   color: gold;
 }
+
 .filter-area {
   width: 90%;
   margin: 15px auto;
@@ -367,6 +426,7 @@ body {
   background: #f3f5e6;
   cursor: pointer;
 }
+
 /* ===== 聊天視窗 ===== */
 .chat-box {
   background: white;

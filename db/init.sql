@@ -74,6 +74,24 @@ CREATE TABLE IF NOT EXISTS order_status_logs (
   KEY idx_order_id (order_id)
 );
 
+USE secondhand_db;
+
+CREATE TABLE IF NOT EXISTS announcements (
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  title         VARCHAR(200) NOT NULL,
+  content       TEXT NOT NULL,
+  status        ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
+  visible_from  DATETIME NULL,
+  visible_to    DATETIME NULL,
+  created_by    INT UNSIGNED NULL,          -- 哪個 admin 建的
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_status (status),
+  KEY idx_visible (visible_from, visible_to)
+);
+
+
 -- seeding：一個管理員 + 一個一般用戶
 INSERT IGNORE INTO users (email, password, name, role, status)
 VALUES ('admin@example.com','123456','admin','admin','active');

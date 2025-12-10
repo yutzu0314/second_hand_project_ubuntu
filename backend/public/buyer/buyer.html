@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,6 +31,14 @@
       <a href="#" id="cartBtn">🛒 (<span id="cartCount">0</span>)</a>
     </div>
   </div>
+
+  <div id="announcementBar" class="announcement-bar">
+    <div class="announcement-inner">
+      <span class="icon">📢</span>
+      <span id="announcementText">（公告載入中）</span>
+    </div>
+  </div>
+
 
   <!-- ===== Banner（保留你的風格，可有可無）===== -->
   <div class="banner">
@@ -62,5 +71,7 @@
   </div>
 
   <script src="buyer.js" defer></script>
+  <script src="/shared/announcement_bar.js"></script>
 </body>
+
 </html>

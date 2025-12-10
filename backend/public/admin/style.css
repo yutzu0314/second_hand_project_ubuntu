@@ -7,7 +7,8 @@
 
 :root {
     --bg-body: #f7f6ee;
-    --bg-sidebar: #7a8f67;       /* 深綠 */
+    --bg-sidebar: #7a8f67;
+    /* 深綠 */
     --bg-card: #ffffff;
     --bg-card-soft: #fbfaf3;
     --border-subtle: #e0ddcf;
@@ -16,9 +17,12 @@
     --text-muted: #7a7f75;
     --text-invert: #fdfdf9;
 
-    --primary: #566f3f;          /* LOGIN 按鈕綠 */
-    --primary-soft: #e6efdf;     /* pill 灰綠底 */
-    --primary-strong: #7aa65b;   /* active pill 綠 */
+    --primary: #566f3f;
+    /* LOGIN 按鈕綠 */
+    --primary-soft: #e6efdf;
+    /* pill 灰綠底 */
+    --primary-strong: #7aa65b;
+    /* active pill 綠 */
     --danger: #d9534f;
 
     --radius-sm: 8px;
@@ -497,12 +501,83 @@ body {
     .sidebar {
         display: none;
     }
+
     .topbar {
         flex-direction: column;
         align-items: flex-start;
     }
+
     .topbar-right {
         min-width: 0;
         width: 100%;
     }
+}
+
+/* ===== 新增 / 編輯公告：表單排版 ===== */
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field.flex-1 {
+    flex: 1;
+}
+
+.form-field.flex-2 {
+    flex: 2;
+}
+
+.field-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.input {
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    padding: 10px 12px;
+    font-size: 14px;
+    background-color: #f9fafb;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #4b7c3f;
+    box-shadow: 0 0 0 1px rgba(75, 124, 63, 0.15);
+}
+
+/* 狀態選單：膠囊樣式，下拉箭頭 */
+.select-status {
+    appearance: none;
+    -webkit-appearance: none;
+    background:
+        #f9fafb url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236b7280' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    padding-right: 32px;
+    /* 給箭頭空間 */
+    border-radius: 999px;
+}
+
+/* datetime-local 看起來更像一組欄位 */
+input[type="datetime-local"].input {
+    font-size: 14px;
+}
+
+/* 提示文字 */
+.tip-field {
+    justify-content: flex-end;
+}
+
+.field-tip {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 22px;
 }

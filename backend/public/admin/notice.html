@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8" />
+<title>二手｜公告管理後台</title>
+<link rel="stylesheet" href="style.css" />
+
+<body class="layout">
+    <!-- 左側側欄：和 index.html 一樣，只是 active 換成公告管理 -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">二手</div>
+            <div class="logo-text">
+                <div class="logo-title">Web Survey System</div>
+                <div class="logo-sub">問卷暨會員管理</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">會員管理</div>
+            <button class="nav-item" onclick="location.href='index.html'">
+                用戶樣本管理
+            </button>
+
+            <div class="nav-section-title">平台管理</div>
+            <button class="nav-item" onclick="location.href='order.html'">
+                訂單管理
+            </button>
+            <button class="nav-item nav-item-active" onclick="location.href='notice.html'">
+                公告管理
+            </button>
+
+            <div class="nav-section-title">系統設定</div>
+            <button class="nav-item">角色與權限</button>
+            <button class="nav-item">操作紀錄</button>
+        </nav>
+    </aside>
+
+    <!-- 右側主畫面 -->
+    <main class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="breadcrumb">
+                    <span>平台管理</span>
+                    <span class="breadcrumb-sep">›</span>
+                    <span class="breadcrumb-current">公告管理</span>
+                </div>
+                <div class="page-title">公告管理</div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="token-row">
+                    <label for="tokenInput">Bearer Token：</label>
+                    <input id="tokenInput" class="token-input" placeholder="貼上 /admin/login 回來的 token" />
+                    <button id="btnReload" class="btn secondary">重新載入</button>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn danger-outline" id="btnLogout">登出</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="content">
+            <!-- 搜尋 / 篩選 -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3>公告清單</h3>
+                        <p class="card-subtitle">管理平台顯示給用戶的公告</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <div class="search-row">
+                            <input id="searchInput" class="input" placeholder="搜尋標題 / 內容…">
+                            <select id="statusFilter" class="input">
+                                <option value="all">狀態：全部</option>
+                                <option value="draft">草稿</option>
+                                <option value="published">已發佈</option>
+                                <option value="archived">已封存</option>
+                            </select>
+                            <button id="filterBtn" class="btn secondary">搜尋</button>
+                            <button id="btnNew" class="btn primary">新增公告</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>標題</th>
+                                <th>狀態</th>
+                                <th>顯示起訖</th>
+                                <th>建立時間</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 編輯/新增公告區 -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3>新增 / 編輯公告</h3>
+                        <p class="card-subtitle">設定公告標題、狀態與顯示期間</p>
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- 第一行：標題 + 狀態 -->
+                    <div class="form-row">
+                        <div class="form-field flex-2">
+                            <label class="field-label" for="annTitle">📌 公告標題</label>
+                            <input id="annTitle" class="input" placeholder="請輸入公告標題">
+                        </div>
+
+                        <div class="form-field flex-1">
+                            <label class="field-label" for="annStatus">狀態</label>
+                            <select id="annStatus" class="input select-status">
+                                <option value="draft">草稿（先存起來）</option>
+                                <option value="published">公開（前台可見）</option>
+                                <option value="hidden">隱藏（暫不顯示）</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 第二行：起訖時間 -->
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label" for="annFrom">顯示起始時間</label>
+                            <input id="annFrom" type="datetime-local" class="input">
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label" for="annTo">顯示結束時間</label>
+                            <input id="annTo" type="datetime-local" class="input">
+                        </div>
+                        <div class="form-field tip-field">
+                            <span class="field-tip">
+                                若留白，代表不限制時間（隨時顯示 / 不自動下架）
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 第三行：內容 -->
+                    <div class="form-row">
+                        <div class="form-field flex-1">
+                            <label class="field-label" for="annContent">公告內容</label>
+                            <textarea id="annContent" class="input" rows="6" placeholder="請輸入公告內文"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button id="btnSave" class="btn primary">儲存公告</button>
+                    <button id="btnReset" class="btn secondary-outline">清空表單</button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="notice.js"></script>
+</body>
+
+</html>

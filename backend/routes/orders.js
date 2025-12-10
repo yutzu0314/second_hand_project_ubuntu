@@ -409,25 +409,26 @@ router.get("/list", async (req, res) => {
   const whereSql = conds.length ? `WHERE ${conds.join(" AND ")}` : "";
 
   try {
-    const [rows] = await pool.query(
+    const[rows] = await pool.query(
       `SELECT 
-          o.*,
-          p.title AS product_title,
-          p.price AS product_price,
-          p.cover_image_url AS product_cover,
-          ub.name  AS buyer_name,
-          ub.email AS buyer_email,
-          us.name  AS seller_name,
-          us.email AS seller_email
-       FROM orders o
-       JOIN products p ON p.product_id = o.product_id
-       JOIN users ub ON ub.id = o.buyer_id
-       JOIN users us ON us.id = o.seller_id
-       ${whereSql}
-       ORDER BY o.order_id DESC
-       LIMIT ? OFFSET ?`,
+        o.*,
+        p.title AS product_title,
+        p.price AS product_price,
+        p.cover_image_url AS product_cover,
+        ub.name  AS buyer_name,
+        ub.email AS buyer_email,
+        us.name  AS seller_name,
+        us.email AS seller_email
+    FROM orders o
+    JOIN products p ON p.product_id = o.product_id
+    JOIN users ub ON ub.user_id = o.buyer_id
+    JOIN users us ON us.user_id = o.seller_id
+    ${whereSql}
+    ORDER BY o.order_id DESC
+    LIMIT ? OFFSET ?`,
       [...params, Number(limit), Number(offset)]
     );
+
 
 
     const [countRows] = await pool.query(
