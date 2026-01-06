@@ -477,3 +477,26 @@ body {
   margin-top: 10px;
   background: #555;
 }
+
+/* ===== 檢舉商品按鈕（紅色警告版） ===== */
+.report-btn {
+  background-color: #b84a4a;     /* 紅色 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;             /* 比 save-btn 小一點 */
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;               /* 稍微小 */
+  transition: 0.2s;
+  margin-top: 6px;
+}
+
+.report-btn:hover {
+  background-color: #a13d3d;     /* 深紅色 */
+}
+
+.report-btn:disabled {
+  background-color: #999;        /* 灰色 */
+  cursor: not-allowed;
+}

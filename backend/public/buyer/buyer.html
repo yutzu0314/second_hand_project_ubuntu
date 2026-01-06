@@ -20,18 +20,22 @@
     </div>
 
     <div class="nav-right">
-      <!-- 搜尋框 -->
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="搜尋商品..." />
         <button id="searchBtn">🔍</button>
       </div>
 
-      <!-- 使用者頭像 + 購物車 -->
       <img src="images/user.png" alt="User" class="user-icon">
       <a href="#" id="cartBtn">🛒 (<span id="cartCount">0</span>)</a>
     </div>
   </div>
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+  <!-- ===== Banner ===== -->
+=======
+>>>>>>> Stashed changes
   <div id="announcementBar" class="announcement-bar">
     <div class="announcement-inner">
       <span class="icon">📢</span>
@@ -41,6 +45,7 @@
 
 
   <!-- ===== Banner（保留你的風格，可有可無）===== -->
+>>>>>>> 4a3928c8a8911280224803de55313c3a35cfa952
   <div class="banner">
     <h2>ReuseX — 找到下一個珍惜它的主人。</h2>
     <p>高品質二手商品 · 值得信賴的交易體驗</p>
@@ -54,6 +59,12 @@
     <div class="modal-content">
       <h3>🛍 購物車清單</h3>
       <ul id="cartItems"></ul>
+
+      <!-- ✅ 測試下單按鈕（重點） -->
+      <button id="testOrder" class="save-btn">
+        🧪 測試下單（建立訂單）
+      </button>
+
       <button id="confirmOrder" class="save-btn">確認下單</button>
       <button id="closeModal" class="save-btn">關閉</button>
     </div>
@@ -70,8 +81,46 @@
     </div>
   </div>
 
+  <!-- 你原本的 JS -->
   <script src="buyer.js" defer></script>
+<<<<<<< Updated upstream
   <script src="/shared/announcement_bar.js"></script>
+=======
+<<<<<<< HEAD
+
+  <!-- ✅ 共用訂單 module（一定要放在 body 最後） -->
+  <script type="module">
+    import { initDB, getOrders, createOrder } from "../shared/api.js";
+
+    initDB();
+    console.log("目前訂單資料：", getOrders());
+
+    const btn = document.querySelector("#testOrder");
+
+    btn.addEventListener("click", () => {
+      const newOrder = {
+        orderId: "ORD" + Date.now(),
+        buyerId: "B001",
+        sellerId: "S001",
+        status: "待出貨",
+        messages: [],
+        review: {
+          rating: null,
+          comment: "",
+          sellerReply: ""
+        }
+      };
+
+      createOrder(newOrder);
+      console.log("下單後訂單資料：", getOrders());
+      alert("✅ 已建立新訂單！");
+    });
+  </script>
+
+=======
+  <script src="/shared/announcement_bar.js"></script>
+>>>>>>> 4a3928c8a8911280224803de55313c3a35cfa952
+>>>>>>> Stashed changes
 </body>
 
 </html>

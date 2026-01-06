@@ -5,11 +5,10 @@ let currentUser = null;
 
 function loadCurrentUser() {
   try {
-    // 優先用 auth
     const raw = localStorage.getItem("auth");
     if (raw && raw !== "null" && raw !== "undefined") {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.id && (parsed.role === "buyer" || parsed.role === "seller")) {
+      if (parsed && parsed.id && parsed.role === "buyer") {
         return parsed;
       }
     }
@@ -17,7 +16,6 @@ function loadCurrentUser() {
     console.error("parse auth failed", e);
   }
 
-  // 如果沒有 auth，就退回舊欄位（user_id / role）
   const idStr = localStorage.getItem("user_id");
   const role = localStorage.getItem("role");
   const email = localStorage.getItem("email") || null;
@@ -38,8 +36,7 @@ function loadCurrentUser() {
 currentUser = loadCurrentUser();
 console.log("buyer.js currentUser =", currentUser);
 
-
-const API_BASE = ""; // 跟後端同網域就留空
+const API_BASE = ""; // 與後端同網域就留空
 
 let products = [];
 const productList = document.getElementById("productList");
@@ -61,9 +58,9 @@ async function fetchProducts() {
   }
 }
 
-// 用後端欄位渲染商品卡片
 function renderProducts(list) {
   productList.innerHTML = "";
+
   if (!list.length) {
     productList.innerHTML = "<p>目前沒有上架中的商品。</p>";
     return;
@@ -72,6 +69,7 @@ function renderProducts(list) {
   list.forEach((p) => {
     const card = document.createElement("div");
     card.classList.add("product-card");
+
     card.innerHTML = `
       <div class="product-img">
         <img src="${p.cover_image_url || "images/default.png"}" alt="${p.title}">
@@ -81,6 +79,7 @@ function renderProducts(list) {
       <p class="price">NT$ ${p.price}</p>
       <button class="save-btn" data-id="${p.product_id}">加入購物車</button>
     `;
+
     productList.appendChild(card);
   });
 }
@@ -88,6 +87,7 @@ function renderProducts(list) {
 fetchProducts();
 
 // ================= 購物車 =================
+
 let cart = [];
 const cartBtn = document.getElementById("cartBtn");
 const cartCount = document.getElementById("cartCount");
@@ -96,7 +96,6 @@ const closeModal = document.getElementById("closeModal");
 const confirmOrder = document.getElementById("confirmOrder");
 const cartItems = document.getElementById("cartItems");
 
-// 更新購物車畫面
 function updateCartDisplay() {
   cartItems.innerHTML = "";
 
@@ -108,7 +107,7 @@ function updateCartDisplay() {
 
   cart.forEach((item) => {
     const li = document.createElement("li");
-    li.textContent = `${item.name} - NT$${item.price}`;
+    li.textContent = `${item.name} - NT$ ${item.price}`;
     cartItems.appendChild(li);
   });
 
@@ -132,7 +131,6 @@ document.addEventListener("click", (e) => {
 
   updateCartDisplay();
 
-  // 顯示提示 modal
   const addedModal = document.getElementById("addedModal");
   addedModal.classList.remove("hidden");
 
@@ -178,8 +176,6 @@ confirmOrder.addEventListener("click", async () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // 如果之後有 token，要一起帶：
-          // "Authorization": `Bearer ${auth.token}`,
         },
         body: JSON.stringify({
           buyer_id: currentUser.id,
@@ -200,12 +196,10 @@ confirmOrder.addEventListener("click", async () => {
 
     alert(`✅ 訂單已送出，共 ${createdOrders.length} 筆。\n可到「訂單追蹤」查看。`);
 
-    // 清空購物車
     cart = [];
     updateCartDisplay();
     checkoutModal.classList.add("hidden");
 
-    // 可選：暫存最後建立的訂單資訊
     localStorage.setItem("lastCreatedOrders", JSON.stringify(createdOrders));
   } catch (e) {
     console.error(e);

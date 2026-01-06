@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>ReuseX｜賣家訂單管理</title>
+  <link rel="stylesheet" href="../buyer/style.css" />
+</head>
+
+<body>
+  <h2 style="padding:20px;">📦 賣家訂單管理</h2>
+
+  <div id="orderList" style="padding:20px;"></div>
+
+  <script type="module">
+    import { initDB, getOrders } from "../shared/api.js";
+
+    initDB();
+
+    const list = document.querySelector("#orderList");
+
+    function render() {
+      const orders = getOrders();
+
+      if (orders.length === 0) {
+        list.innerHTML = "<p>目前沒有訂單</p>";
+        return;
+      }
+
+      list.innerHTML = orders.map(o => `
+        <div style="border:1px solid #ccc; padding:15px; margin-bottom:10px;">
+          <p><b>訂單編號：</b>${o.orderId}</p>
+          <p><b>狀態：</b>${o.status}</p>
+          <p><b>留言數：</b>${o.messages.length}</p>
+          <p><b>評價：</b>${o.review.rating ?? "尚未評價"}</p>
+        </div>
+      `).join("");
+    }
+
+    render();
+  </script>
+</body>
+</html>
