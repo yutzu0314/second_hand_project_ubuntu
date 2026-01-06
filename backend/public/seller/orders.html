@@ -19,7 +19,7 @@
       color: var(--ink);
     }
 
-    /* ================= 導覽列 ================= */
+    /* 導覽列 */
     .navbar {
       background-color: #a4b693;
       display: flex;
@@ -61,7 +61,6 @@
       outline: none;
       padding: 6px;
       font-size: 14px;
-      font-family: inherit;
     }
 
     .search-box button {
@@ -82,14 +81,8 @@
       font-weight: 500;
     }
 
-    /* ================= 下拉選單（已對齊 index.html） ================= */
-    .dropdown {
-      position: relative;
-    }
-
-    .dropdown > a {
-      font-weight: 600;
-    }
+    /* 下拉選單 */
+    .dropdown { position: relative; }
 
     .dropdown-content {
       display: none;
@@ -111,10 +104,6 @@
       font-size: 15px;
       color: var(--ink);
       text-decoration: none;
-      font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      transition: background-color 0.2s ease, font-weight 0.2s ease;
     }
 
     .dropdown-content a:hover {
@@ -126,14 +115,8 @@
       display: block;
     }
 
-    /* ================= 內容區 ================= */
     .main-content {
       padding: 30px;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      font-weight: 700;
     }
 
     table {
@@ -148,7 +131,6 @@
       padding: 14px;
       text-align: center;
       border-bottom: 1px solid #eee;
-      font-size: 15px;
     }
 
     th {
@@ -163,7 +145,6 @@
       border-radius: 8px;
       padding: 6px 14px;
       cursor: pointer;
-      font-family: inherit;
     }
 
     .btn-ship {
@@ -173,40 +154,13 @@
       border-radius: 8px;
       padding: 6px 14px;
       cursor: pointer;
-      font-family: inherit;
       margin-left: 6px;
-    }
-
-    /* ================= 彈窗 ================= */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
-      z-index: 200;
-    }
-
-    .modal-content {
-      background: #fff;
-      width: 420px;
-      margin: 120px auto;
-      padding: 22px;
-      border-radius: 14px;
-      font-family: inherit;
-    }
-
-    .close {
-      float: right;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
 
-<!-- 導覽列 -->
 <div class="navbar">
   <div class="nav-left">
     <div class="logo">二手</div>
@@ -222,17 +176,13 @@
       <div class="dropdown-content">
         <a href="index.html">刊登商品</a>
         <a href="index.html">編輯商品</a>
-        <a href="order.html">檢視訂單</a>
+        <a href="orders.html">檢視訂單</a>
         <a href="review.html">評價管理</a>
       </div>
     </div>
-    <a href="#">訊息</a>
-    <a href="#">購物車</a>
-    <a href="login.html">LOGIN</a>
   </div>
 </div>
 
-<!-- 主內容 -->
 <div class="main-content">
   <h2>📦 檢視訂單</h2>
 
@@ -249,15 +199,6 @@
     </thead>
     <tbody id="orderTable"></tbody>
   </table>
-</div>
-
-<!-- 彈窗 -->
-<div class="modal" id="orderModal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">✖</span>
-    <h3>訂單明細</h3>
-    <p id="orderDetail"></p>
-  </div>
 </div>
 
 <script>
@@ -279,27 +220,11 @@
           <td>$${o.price}</td>
           <td>${o.status}</td>
           <td>
-            <button class="btn-view" onclick="viewOrder(${i})">查看</button>
-            ${o.status === "待出貨" ? `<button class="btn-ship" onclick="shipOrder(${i})">出貨</button>` : ""}
+            <button class="btn-view">查看</button>
+            ${o.status === "待出貨" ? `<button class="btn-ship">出貨</button>` : ""}
           </td>
         </tr>`;
     });
-  }
-
-  function viewOrder(i) {
-    const o = orders[i];
-    document.getElementById("orderDetail").innerText =
-      `訂單編號：${o.id}\n買家：${o.buyer}\n商品：${o.product}\n金額：$${o.price}\n狀態：${o.status}`;
-    document.getElementById("orderModal").style.display = "block";
-  }
-
-  function closeModal() {
-    document.getElementById("orderModal").style.display = "none";
-  }
-
-  function shipOrder(i) {
-    orders[i].status = "已出貨";
-    renderOrders();
   }
 
   renderOrders();
