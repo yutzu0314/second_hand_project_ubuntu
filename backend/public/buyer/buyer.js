@@ -110,7 +110,7 @@ function renderProducts(list) {
       <div class="product-img">
         <img src="${p.cover_image_url || "images/default.png"}" alt="${p.title || "product"}">
       </div>
-      <div class="product-tag">賣家 ID：${p.seller_id ?? "-"}</div>
+      <div class="product-tag">賣家：${p.seller_username || ("ID:" + p.seller_id)}</div>
       <h3>${p.title || "(無標題)"}</h3>
       <p class="price">NT$ ${p.price ?? "-"}</p>
       <button class="save-btn add-to-cart" data-id="${p.product_id}">加入購物車</button>
@@ -153,6 +153,13 @@ document.addEventListener("click", (e) => {
   const productId = Number(target.dataset.id);
   const product = products.find((p) => p.product_id === productId);
   if (!product) return;
+
+  const exists = cart.some(i => i.product_id === product.product_id);
+  if (exists) {
+    alert("此商品已在購物車中（每個商品只能買 1 件）");
+    return;
+  }
+
 
   cart.push({
     product_id: product.product_id,

@@ -57,35 +57,49 @@ router.get("/list", async (req, res) => {
   const conds = [];
   const params = [];
 
-  if (status) { conds.push("status=?"); params.push(status); }
-  if (seller_id) { conds.push("seller_id=?"); params.push(Number(seller_id)); }
+  if (status) { conds.push("p.status=?"); params.push(status); }
+  if (seller_id) { conds.push("p.seller_id=?"); params.push(Number(seller_id)); }
   if (q) {
-    conds.push("(title LIKE ? OR description LIKE ?)");
+    conds.push("(p.title LIKE ? OR p.description LIKE ?)");
     params.push(`%${q}%`, `%${q}%`);
   }
 
   const whereSql = conds.length ? `WHERE ${conds.join(" AND ")}` : "";
 
+  const baseFrom = `
+    FROM products p
+    JOIN users u ON u.user_id = p.seller_id
+  `;
+
   try {
     const [items] = await pool.query(
-      `SELECT * FROM products
-       ${whereSql}
-       ORDER BY product_id DESC
-       LIMIT ? OFFSET ?`,
+      `
+      SELECT p.*, u.name AS seller_username
+      ${baseFrom}
+      ${whereSql}
+      ORDER BY p.product_id DESC
+      LIMIT ? OFFSET ?
+      `,
       [...params, Number(limit), Number(offset)]
     );
 
     const [countRows] = await pool.query(
-      `SELECT COUNT(*) as total FROM products ${whereSql}`,
+      `
+      SELECT COUNT(*) as total
+      ${baseFrom}
+      ${whereSql}
+      `,
       params
     );
 
     res.json({ total: countRows[0].total, items });
   } catch (err) {
     console.error(err);
-    httpError(res, 500, "list_products failed");
+    res.status(500).json({ error: "list_products failed" });
   }
 });
+
+
 
 /**
  * @swagger
@@ -136,7 +150,7 @@ router.post("/create", async (req, res) => {
   }
 
   // 用你們原本 enum
-  if (!["on_sale", "sold", "removed", "reported"].includes(status)) {
+  if (!["on_sale", "reserved", "sold", "removed", "reported"].includes(status)) {
     return httpError(res, 400, "invalid status");
   }
 

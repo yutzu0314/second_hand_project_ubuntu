@@ -59,10 +59,15 @@ router.post("/create", async (req, res) => {
       return httpError(res, 404, "Product not found");
     }
     const product = pRows[0];
-    if (product.status !== "on_sale") {
+    if (product.status !== "reserved") {
       await conn.rollback();
-      return httpError(res, 400, "Product not available for sale");
+      return httpError(res, 400, "Product not reserved");
     }
+    if (product.buyer_id !== order.buyer_id) {
+      await conn.rollback();
+      return httpError(res, 400, "Reserved buyer mismatch");
+    }
+
 
     // 2) 建 order（鎖價 order_price）
     const [oRet] = await conn.query(
@@ -72,6 +77,11 @@ router.post("/create", async (req, res) => {
     );
 
     const order_id = oRet.insertId;
+    await conn.query(
+      "UPDATE products SET status='reserved', buyer_id=? WHERE product_id=?",
+      [buyer_id, product_id]
+    );
+
 
     // 3) log
     await conn.query(

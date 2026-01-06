@@ -58,6 +58,7 @@
   <!-- ===== SCRIPT START ===== -->
   <script>
     // ==== 讀取登入中的買家 ====
+
     function loadCurrentUser() {
       try {
         const raw = localStorage.getItem("auth");
@@ -90,7 +91,13 @@
     let orders = []; // 從後端抓
     const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
     let chats = JSON.parse(localStorage.getItem("chats")) || {};
+    
+    const container = document.getElementById("orderContainer");
+    const filterSelect = document.getElementById("orderFilter");
+
     // ==== 從後端抓這個買家的訂單 ====
+    const API_BASE = ""; // 你後端就在 localhost:3000，留空即可
+
     async function fetchBuyerOrders() {
       if (!currentUser) {
         container.innerHTML = "<p>請先登入買家帳號再查看訂單。</p>";
@@ -99,9 +106,14 @@
 
       try {
         const params = new URLSearchParams({ buyer_id: currentUser.id });
-        const res = await fetch(`/api/order/list?` + params.toString());
-        if (!res.ok) throw new Error("載入訂單失敗");
-        const data = await res.json();
+        const res = await fetch(`${API_BASE}/api/order/list?${params.toString()}`);
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `載入訂單失敗 (${res.status})`);
+        }
+
+        const data = await res.json(); // { total, items }
         orders = data.items || [];
         renderOrders(filterSelect.value || "all");
       } catch (err) {
@@ -110,9 +122,8 @@
       }
     }
 
+        
 
-    const container = document.getElementById("orderContainer");
-    const filterSelect = document.getElementById("orderFilter");
 
     // ===== 渲染訂單 =====
     function renderOrders(filter = "all") {
@@ -146,7 +157,8 @@
 
         div.innerHTML = `
       <h3>訂單編號：${order.order_id}</h3>
-      <p>下單時間：${order.created_at || ""}</p>
+      <p>下單時間：${new Date(order.created_at).toLocaleString()}</p>
+
       <p>狀態：<strong>${order.status}</strong></p>
       <p class="items">商品：${order.product_title}（NT$${order.product_price}）</p>
 
@@ -166,14 +178,6 @@
         container.appendChild(div);
       });
     }
-
-    // 初次渲染
-    renderOrders();
-
-    // ===== 篩選事件 =====
-    filterSelect.addEventListener("change", () => {
-      renderOrders(filterSelect.value);
-    });
 
 
     // =======================

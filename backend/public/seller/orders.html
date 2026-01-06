@@ -156,6 +156,11 @@
       cursor: pointer;
       margin-left: 6px;
     }
+    button:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
   </style>
 </head>
 
@@ -202,33 +207,150 @@
 </div>
 
 <script>
-  const orders = [
-    { id: "A001", buyer: "王小明", product: "二手滑鼠", price: 500, status: "待出貨" },
-    { id: "A002", buyer: "陳小華", product: "二手鍵盤", price: 800, status: "已出貨" }
-  ];
+  // ===== 讀取登入賣家 =====
+  function loadCurrentUser() {
+    try {
+      const raw = localStorage.getItem("auth");
+      if (raw && raw !== "null" && raw !== "undefined") {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.id && parsed.role === "seller") return parsed;
+      }
+    } catch (e) {
+      console.error("parse auth failed", e);
+    }
 
-  const table = document.getElementById("orderTable");
-
-  function renderOrders() {
-    table.innerHTML = "";
-    orders.forEach((o, i) => {
-      table.innerHTML += `
-        <tr>
-          <td>${o.id}</td>
-          <td>${o.buyer}</td>
-          <td>${o.product}</td>
-          <td>$${o.price}</td>
-          <td>${o.status}</td>
-          <td>
-            <button class="btn-view">查看</button>
-            ${o.status === "待出貨" ? `<button class="btn-ship">出貨</button>` : ""}
-          </td>
-        </tr>`;
-    });
+    const idStr = localStorage.getItem("user_id");
+    const role = localStorage.getItem("role");
+    if (idStr && role === "seller") {
+      return { id: Number(idStr), role };
+    }
+    return null;
   }
 
-  renderOrders();
+  const currentUser = loadCurrentUser();
+  const API_BASE = ""; // 你後端在 localhost:3000，留空即可
+  const table = document.getElementById("orderTable");
+
+  function statusText(s) {
+    // 你可自由調整
+    const map = {
+      pending: "待確認",
+      confirmed: "待出貨",
+      completed: "已完成",
+      cancelled: "已取消",
+    };
+    return map[s] || s;
+  }
+
+  async function fetchSellerOrders() {
+    if (!currentUser) {
+      table.innerHTML = `<tr><td colspan="6">請先登入賣家帳號</td></tr>`;
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/order/list?seller_id=${currentUser.id}`);
+      if (!res.ok) throw new Error("list orders failed: " + res.status);
+      const data = await res.json(); // { total, items }
+      renderOrders(data.items || []);
+    } catch (e) {
+      console.error(e);
+      table.innerHTML = `<tr><td colspan="6">載入訂單失敗</td></tr>`;
+    }
+  }
+
+  function renderOrders(orders) {
+    table.innerHTML = "";
+
+    if (!orders.length) {
+      table.innerHTML = `<tr><td colspan="6">目前沒有訂單</td></tr>`;
+      return;
+    }
+
+    // 新到舊
+    orders.sort((a, b) => b.order_id - a.order_id);
+
+    for (const o of orders) {
+      const canConfirm = o.status === "pending";
+      const canFinish  = o.status === "confirmed";
+      const canCancel  = o.status === "pending" || o.status === "confirmed";
+
+      table.innerHTML += `
+        <tr>
+          <td>${o.order_id}</td>
+          <td>${o.buyer_name || o.buyer_email || o.buyer_id || "-"}</td>
+          <td>${o.product_title || o.product_id}</td>
+          <td>NT$ ${o.order_price ?? o.product_price ?? "-"}</td>
+          <td>${statusText(o.status)}</td>
+          <td>
+            <button class="btn-ship" data-act="confirm" data-id="${o.order_id}" ${canConfirm ? "" : "disabled"}>確認</button>
+            <button class="btn-view" data-act="finish"  data-id="${o.order_id}" ${canFinish ? "" : "disabled"}>完成</button>
+            <button class="btn-view" data-act="cancel"  data-id="${o.order_id}" ${canCancel ? "" : "disabled"}>取消</button>
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+  async function updateOrder(action, orderId) {
+    const urlMap = {
+      confirm: `${API_BASE}/api/order/confirm`,
+      finish:  `${API_BASE}/api/order/finish`,
+      cancel:  `${API_BASE}/api/order/cancel`,
+    };
+    const url = urlMap[action];
+    if (!url) return;
+
+    if (!currentUser) {
+      alert("請先登入賣家");
+      return;
+    }
+
+    const payload = { order_id: Number(orderId) };
+
+    if (action === "cancel") {
+      payload.by_user_id = Number(currentUser.id);   // 👈 取消用這個
+    } else {
+      payload.seller_id = Number(currentUser.id);    // 👈 確認/完成用這個
+    }
+
+    try {
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        alert(data.error || `更新失敗 (${res.status})`);
+        return;
+      }
+
+      await fetchSellerOrders();
+    } catch (e) {
+      console.error(e);
+      alert("更新訂單時發生錯誤");
+    }
+  }
+
+
+  table.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-act][data-id]");
+    if (!btn) return;
+
+    const act = btn.dataset.act;
+    const id = btn.dataset.id;
+
+    if (act === "cancel" && !confirm("確定要取消這筆訂單嗎？")) return;
+    updateOrder(act, id);
+  });
+
+
+  fetchSellerOrders();
 </script>
+
 
 </body>
 </html>
