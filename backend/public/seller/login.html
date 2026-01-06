@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>登入 - 二手交易平台</title>
+  <style>
+    body {
+      background-color: #f8f8ef;
+      font-family: "Noto Sans TC", "微軟正黑體", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-size: 20px;
+    }
+
+    /* 頂部列 */
+    .topbar {
+      position: absolute;
+      top: 20px;
+      left: 40px;
+      right: 40px;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      color: #4a5d23;
+    }
+
+    /* 左側 logo */
+    .logo {
+      position: absolute;
+      left: 220px;
+      background-color: #4a5d23;
+      color: white;
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 登入區塊 */
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-left: 320px;
+      width: 430px;
+    }
+
+    /* 三個身份選擇 */
+    .user-type {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 25px;
+    }
+
+    .user-type button {
+      flex: 1;
+      margin: 0 5px;
+      background-color: #cbd1b7;
+      border: none;
+      color: #4a5d23;
+      padding: 14px 0;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    .user-type button.active {
+      background-color: #4a5d23;
+      color: white;
+    }
+
+    .user-type button:hover {
+      background-color: #6a7b47;
+      color: white;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px;
+      margin: 12px 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 18px;
+      background-color: #eef0e7;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border: 1px solid #6a7b47;
+    }
+
+    .error {
+      border: 1px solid #e74c3c !important;
+      background-color: #fff5f5 !important;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 16px;
+      margin-top: 6px;
+      text-align: left;
+      width: 100%;
+      display: none;
+    }
+
+    .login-row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 20px;
+      align-items: center;
+    }
+
+    .login-btn {
+      background-color: #4a5d23;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      width: 140px;
+      padding: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .links a {
+      color: #4a5d23;
+      text-decoration: none;
+      margin: 0 8px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div>公告</div>
+    <div>ABOUT US</div>
+  </div>
+
+  <div class="logo">二手</div>
+
+  <div class="login-container">
+
+    <!-- 三角色按鈕 -->
+    <div class="user-type">
+      <button id="sellerBtn" class="active">賣家</button>
+      <button id="buyerBtn">買家</button>
+      <button id="adminBtn">管理員</button>
+    </div>
+
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="用戶名稱" required>
+      <input type="password" id="password" placeholder="密碼" required>
+
+      <p id="errorText" class="error-message">登入失敗或密碼錯誤</p>
+
+      <div class="login-row">
+        <button type="submit" class="login-btn">LOGIN</button>
+
+        <div class="links">
+          <a href="#">忘記密碼</a> |
+          <a href="sign.html">註冊帳號</a>
+
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const sellerBtn = document.getElementById("sellerBtn");
+    const buyerBtn = document.getElementById("buyerBtn");
+    const adminBtn = document.getElementById("adminBtn");
+
+    const errorText = document.getElementById("errorText");
+    const passwordInput = document.getElementById("password");
+
+    // 切換 active 樣式
+    function setActive(btn) {
+      sellerBtn.classList.remove("active");
+      buyerBtn.classList.remove("active");
+      adminBtn.classList.remove("active");
+      btn.classList.add("active");
+    }
+
+    sellerBtn.onclick = () => setActive(sellerBtn);
+    buyerBtn.onclick = () => setActive(buyerBtn);
+    adminBtn.onclick = () => setActive(adminBtn);
+
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const user = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value.trim();
+
+      let role = "";
+      if (sellerBtn.classList.contains("active")) role = "seller";
+      else if (buyerBtn.classList.contains("active")) role = "buyer";
+      else role = "admin";
+
+      // ⭐ 賣家 → 不檢查帳號密碼
+      if (role === "seller") {
+        window.location.href = "index.html";
+        return;
+      }
+      // ⭐ 檢查註冊帳號（買家 + 賣家）
+let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+
+if (role === "buyer" || role === "seller") {
+  const found = accounts.find(
+    acc => acc.user === user && acc.pass === pass && acc.role === role
+  );
+
+  if (found) {
+    if (role === "seller") window.location.href = "index.html";
+    else window.location.href = "buyer.html";
+    return;
+  }
+}
+
+
+    
+
+      // 管理員
+      if (role === "admin") {
+        if (user === "admin" && pass === "admin123") {
+          window.location.href = "admin.html";
+          return;
+        }
+      }
+
+      // 錯誤提示
+      errorText.style.display = "block";
+      passwordInput.classList.add("error");
+    });
+  </script>   <!-- ⭐ 你缺少的就是這一行！ -->
+
+</body>
+</html>
+

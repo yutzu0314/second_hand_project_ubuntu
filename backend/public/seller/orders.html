@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>檢視訂單</title>
+
+  <style>
+    :root {
+      --bg: #f8f8ef;
+      --green: #5e6b3f;
+      --ink: #2f3b1a;
+      --card: #e4ead7;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    /* ================= 導覽列 ================= */
+    .navbar {
+      background-color: #a4b693;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 40px;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo {
+      background-color: var(--green);
+      color: #fff;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: #d5dfc4;
+      border-radius: 20px;
+      padding: 4px 10px;
+      margin-left: 20px;
+    }
+
+    .search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      padding: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .search-box button {
+      border: none;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    .nav-right a {
+      text-decoration: none;
+      color: var(--ink);
+      margin: 0 10px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    /* ================= 下拉選單（已對齊 index.html） ================= */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown > a {
+      font-weight: 600;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #f8f8ef;
+      border-radius: 16px;
+      padding: 12px 0;
+      min-width: 170px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      z-index: 100;
+    }
+
+    .dropdown-content a {
+      display: block;
+      padding: 12px 22px;
+      font-size: 15px;
+      color: var(--ink);
+      text-decoration: none;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      transition: background-color 0.2s ease, font-weight 0.2s ease;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #e4ead7;
+      font-weight: 600;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* ================= 內容區 ================= */
+    .main-content {
+      padding: 30px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+
+    th {
+      background: #b9c4a4;
+      font-weight: 700;
+    }
+
+    .btn-view {
+      background: #8fa77a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-ship {
+      background: #e1a84b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-left: 6px;
+    }
+
+    /* ================= 彈窗 ================= */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+    }
+
+    .modal-content {
+      background: #fff;
+      width: 420px;
+      margin: 120px auto;
+      padding: 22px;
+      border-radius: 14px;
+      font-family: inherit;
+    }
+
+    .close {
+      float: right;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 導覽列 -->
+<div class="navbar">
+  <div class="nav-left">
+    <div class="logo">二手</div>
+    <div class="search-box">
+      <input type="text" placeholder="搜尋商品...">
+      <button>🔍</button>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <div class="dropdown">
+      <a href="#">賣家中心 ▼</a>
+      <div class="dropdown-content">
+        <a href="index.html">刊登商品</a>
+        <a href="index.html">編輯商品</a>
+        <a href="order.html">檢視訂單</a>
+        <a href="review.html">評價管理</a>
+      </div>
+    </div>
+    <a href="#">訊息</a>
+    <a href="#">購物車</a>
+    <a href="login.html">LOGIN</a>
+  </div>
+</div>
+
+<!-- 主內容 -->
+<div class="main-content">
+  <h2>📦 檢視訂單</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>訂單編號</th>
+        <th>買家</th>
+        <th>商品</th>
+        <th>金額</th>
+        <th>狀態</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="orderTable"></tbody>
+  </table>
+</div>
+
+<!-- 彈窗 -->
+<div class="modal" id="orderModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">✖</span>
+    <h3>訂單明細</h3>
+    <p id="orderDetail"></p>
+  </div>
+</div>
+
+<script>
+  const orders = [
+    { id: "A001", buyer: "王小明", product: "二手滑鼠", price: 500, status: "待出貨" },
+    { id: "A002", buyer: "陳小華", product: "二手鍵盤", price: 800, status: "已出貨" }
+  ];
+
+  const table = document.getElementById("orderTable");
+
+  function renderOrders() {
+    table.innerHTML = "";
+    orders.forEach((o, i) => {
+      table.innerHTML += `
+        <tr>
+          <td>${o.id}</td>
+          <td>${o.buyer}</td>
+          <td>${o.product}</td>
+          <td>$${o.price}</td>
+          <td>${o.status}</td>
+          <td>
+            <button class="btn-view" onclick="viewOrder(${i})">查看</button>
+            ${o.status === "待出貨" ? `<button class="btn-ship" onclick="shipOrder(${i})">出貨</button>` : ""}
+          </td>
+        </tr>`;
+    });
+  }
+
+  function viewOrder(i) {
+    const o = orders[i];
+    document.getElementById("orderDetail").innerText =
+      `訂單編號：${o.id}\n買家：${o.buyer}\n商品：${o.product}\n金額：$${o.price}\n狀態：${o.status}`;
+    document.getElementById("orderModal").style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById("orderModal").style.display = "none";
+  }
+
+  function shipOrder(i) {
+    orders[i].status = "已出貨";
+    renderOrders();
+  }
+
+  renderOrders();
+</script>
+
+</body>
+</html>
