@@ -61,7 +61,6 @@ app.use('/api/products', productsRouter);
 app.use(announcementsRouter);
 app.use('/shared', express.static(path.join(__dirname, 'public/shared')));
 app.use("/api/messages", messagesRouter);
-app.use("/api/reviews", require("./routes/reviews"));
 
 
 const port = Number(process.env.PORT || 3000);
