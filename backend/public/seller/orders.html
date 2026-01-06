@@ -160,6 +160,106 @@
       opacity: 0.45;
       cursor: not-allowed;
     }
+    /* ===== 聊天 Modal（買家同款）===== */
+    .modal.hidden { display: none; }
+
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .chat-box{
+      width: min(520px, 92vw);
+      height: min(560px, 82vh);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      border: 2px solid #5e6b3f;
+    }
+
+    .chat-box h3{
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #2f3b1a;
+    }
+
+    .chat-messages{
+      flex: 1;
+      background: #f6f7f2;
+      border: 1px solid #e7eadf;
+      border-radius: 12px;
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    .chat-message{
+      max-width: 78%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      margin: 8px 0;
+      line-height: 1.4;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .chat-buyer{
+      background: #e9ecef;
+      color: #222;
+      margin-right: auto;
+      border-top-left-radius: 6px;
+    }
+
+    .chat-seller{
+      background: #dfead7;
+      color: #1e2b12;
+      margin-left: auto;
+      border-top-right-radius: 6px;
+    }
+
+    .chat-input-area{
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .chat-input-area input{
+      flex: 1;
+      border: 1px solid #d7dccd;
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .save-btn{
+      background: #5e6b3f;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .save-btn:hover{ filter: brightness(0.95); }
+
+    .close-chat{
+      margin-top: 10px;
+      background: #2f3b1a;
+    }
+
+    button:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
 
   </style>
 </head>
@@ -206,6 +306,23 @@
   </table>
 </div>
 
+<!-- ===== 聊天視窗（跟買家同款）===== -->
+<div id="chatModal" class="modal hidden">
+  <div class="chat-box">
+    <h3 id="chatTitle">與買家聊天</h3>
+
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="輸入訊息..." />
+      <button id="sendChatBtn" class="save-btn">送出</button>
+    </div>
+
+    <button id="closeChat" class="save-btn close-chat">關閉</button>
+  </div>
+</div>
+
+
 <script>
   // ===== 讀取登入賣家 =====
   function loadCurrentUser() {
@@ -241,6 +358,114 @@
     };
     return map[s] || s;
   }
+  // =======================
+  // ===== 聊天功能 =======
+  // =======================
+  const chatModal = document.getElementById("chatModal");
+  const chatMessages = document.getElementById("chatMessages");
+  const chatInput = document.getElementById("chatInput");
+  const sendChatBtn = document.getElementById("sendChatBtn");
+  const closeChat = document.getElementById("closeChat");
+
+  let currentChatOrderId = null;
+
+  // 打開聊天
+  function openChat(orderId, productNames) {
+    currentChatOrderId = orderId;
+
+    document.getElementById("chatTitle").textContent =
+      "訂單 " + orderId + "｜商品：" + (productNames || "");
+
+    chatModal.classList.remove("hidden");
+    loadChatMessages();
+    startChatPolling();
+  }
+
+  // 顯示聊天紀錄
+  async function loadChatMessages() {
+    chatMessages.innerHTML = "";
+
+    try {
+      const qs = new URLSearchParams({
+        order_id: currentChatOrderId,
+        user_id: currentUser.id
+      });
+
+      const res = await fetch(`/api/messages/list?${qs.toString()}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "load messages failed");
+
+      (data.items || []).forEach(m => {
+        const div = document.createElement("div");
+        div.classList.add("chat-message");
+
+        // 自己（賣家）= 右邊 chat-seller
+        const isMe = Number(m.sender_id) === Number(currentUser.id);
+        div.classList.add(isMe ? "chat-seller" : "chat-buyer");
+
+        div.textContent = m.content;
+        chatMessages.appendChild(div);
+      });
+
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } catch (e) {
+      console.error(e);
+      chatMessages.innerHTML = `<div style="padding:8px;">載入訊息失敗</div>`;
+    }
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  }
+
+  // 發送聊天訊息
+  sendChatBtn.onclick = async () => {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    try {
+      const res = await fetch(`/api/messages/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: Number(currentChatOrderId),
+          sender_id: Number(currentUser.id),
+          content: text
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || `送出失敗 (${res.status})`);
+        return;
+      }
+
+      chatInput.value = "";
+      await loadChatMessages();
+    } catch (e) {
+      console.error(e);
+      alert("送出訊息時發生錯誤");
+    }
+  };
+
+  // 輪詢
+  let chatPollTimer = null;
+  function startChatPolling() {
+    stopChatPolling();
+    chatPollTimer = setInterval(() => {
+      if (currentChatOrderId) loadChatMessages();
+    }, 2000);
+  }
+  function stopChatPolling() {
+    if (chatPollTimer) clearInterval(chatPollTimer);
+    chatPollTimer = null;
+  }
+
+  // 關閉聊天
+  closeChat.onclick = () => {
+    chatModal.classList.add("hidden");
+    stopChatPolling();
+  };
 
   async function fetchSellerOrders() {
     if (!currentUser) {
@@ -274,6 +499,7 @@
       const canConfirm = o.status === "pending";
       const canFinish  = o.status === "confirmed";
       const canCancel  = o.status === "pending" || o.status === "confirmed";
+      const canChat = o.status !== "cancelled";
 
       table.innerHTML += `
         <tr>
@@ -283,10 +509,26 @@
           <td>NT$ ${o.order_price ?? o.product_price ?? "-"}</td>
           <td>${statusText(o.status)}</td>
           <td>
-            <button class="btn-ship" data-act="confirm" data-id="${o.order_id}" ${canConfirm ? "" : "disabled"}>確認</button>
-            <button class="btn-view" data-act="finish"  data-id="${o.order_id}" ${canFinish ? "" : "disabled"}>完成</button>
-            <button class="btn-view" data-act="cancel"  data-id="${o.order_id}" ${canCancel ? "" : "disabled"}>取消</button>
-          </td>
+            <button class="btn-ship" data-act="confirm" data-id="${o.order_id}" ${canConfirm ? "" : "disabled"}>
+              確認
+            </button>
+
+            <button class="btn-view" data-act="finish" data-id="${o.order_id}" ${canFinish ? "" : "disabled"}>
+              完成
+            </button>
+
+            <button class="btn-view" data-act="cancel" data-id="${o.order_id}" ${canCancel ? "" : "disabled"}>
+              取消
+            </button>
+
+            <button class="btn-view"
+              data-act="chat"
+              data-id="${o.order_id}"
+              data-items="${o.product_title || ""}"
+              ${canChat ? "" : "disabled"}>聊天
+            </button>
+        </td>
+
         </tr>
       `;
     }
@@ -343,9 +585,15 @@
     const act = btn.dataset.act;
     const id = btn.dataset.id;
 
+    if (act === "chat") {
+      openChat(id, btn.dataset.items || "");
+      return;
+    }
+
     if (act === "cancel" && !confirm("確定要取消這筆訂單嗎？")) return;
     updateOrder(act, id);
   });
+
 
 
   fetchSellerOrders();

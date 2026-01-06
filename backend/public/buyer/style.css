@@ -1,503 +1,229 @@
-/* ===== 網頁基礎設定 ===== */
-body {
-  background-color: #f8f8ef;
-  font-family: "Noto Sans TC", "微軟正黑體", sans-serif;
-  margin: 0;
+/* =========================
+   Base
+========================= */
+:root{
+  --bg: #f8f8ef;
+  --nav: #a4b693;
+  --ink: #2f3b1a;
+  --card: #dfe6d2;
+  --btn: #4a5d23;
+  --btn-dark:#3b4b1b;
+
+  --modal-overlay: rgba(0,0,0,0.35);
+  --chat-border: #5e6b3f;
+  --chat-bg: #f6f7f2;
+  --chat-me: #dfead7;      /* 自己 */
+  --chat-other: #e9ecef;   /* 對方 */
 }
 
-/* ===== 導覽列 ===== */
-.navbar {
-  background-color: #a4b693;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+*{ box-sizing: border-box; }
+
+body{
+  background-color: var(--bg);
+  font-family: "Noto Sans TC","微軟正黑體",sans-serif;
+  margin: 0;
+  color: var(--ink);
+}
+
+/* =========================
+   Navbar
+========================= */
+.navbar{
+  background-color: var(--nav);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
   padding: 10px 40px;
 }
 
-.nav-left,
-.nav-right {
-  display: flex;
-  align-items: center;
-}
+.nav-left{ display:flex; align-items:center; gap:10px; }
 
-.nav-left a,
-.nav-right a {
-  color: #2f3b1a;
-  text-decoration: none;
+.nav-left a{
+  color: var(--ink);
+  text-decoration:none;
   font-size: 15px;
-  margin: 0 10px;
+  margin: 0 6px;
 }
+.nav-left a:hover{ text-decoration: underline; }
 
-.nav-left a:hover,
-.nav-right a:hover {
-  text-decoration: underline;
-}
-
-/* ===== 公告條（共用樣式） ===== */
-.announcement-bar {
-  width: 100%;
-  background-color: #fff8d6;
-  /* 柔和米黃 */
-  border-bottom: 1px solid #e6dca5;
-  padding: 10px 0;
-  text-align: center;
-  color: #6a5d1b;
-  font-size: 16px;
-  font-weight: 500;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  display: none;
-  /* 沒公告時不顯示 */
-  letter-spacing: 0.5px;
-  overflow: hidden;
-}
-
-.announcement-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.announcement-bar .icon {
-  margin-right: 4px;
-  color: #d4a017;
-  flex: 0 0 auto;
-}
-
-#announcementText {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* 跑馬燈效果（要就加 class） */
-.announcement-scroll {
-  animation: scroll-left 12s linear infinite;
-}
-
-@keyframes scroll-left {
-  0% {
-    transform: translateX(100%);
-  }
-
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-/* ===== LOGO 圖片（取代原本圓形） ===== */
-.logo-img {
-  height: 60px;
-  margin-right: 15px;
+.logo-img{
+  height: 56px;
   border-radius: 10px;
+  margin-right: 6px;
 }
 
-/* ===== 使用者頭像 ===== */
-.user-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-left: 15px;
-  margin-right: 10px;
-  vertical-align: middle;
+/* =========================
+   Page Layout
+========================= */
+.product-list{
+  width: 90%;
+  margin: 26px auto;
+  display:flex;
+  flex-direction:column;
+  gap: 16px;
 }
 
-/* ===== 搜尋框 ===== */
-.search-box {
-  display: flex;
-  align-items: center;
-  background-color: #dfe6d2;
-  border-radius: 25px;
-  padding: 5px 10px;
-  width: 350px;
+.product-list h2{
+  margin: 0 0 4px 0;
 }
 
-.search-box input {
-  border: none;
-  background: none;
-  outline: none;
+/* filter */
+.filter-area{
   width: 100%;
-  padding: 8px;
-  font-size: 14px;
-}
-
-.search-box button {
-  background-color: #4a5d23;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
-}
-
-.search-box button:hover {
-  background-color: #3b4b1b;
-}
-
-/* ===== 下拉選單（賣家中心） ===== */
-.dropdown {
-  position: relative;
-  display: inline-block;
-  margin-right: 25px;
-}
-
-.dropdown button {
-  background-color: transparent;
-  border: none;
-  font-size: 15px;
-  cursor: pointer;
-  color: #2f3b1a;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  top: 25px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-  min-width: 130px;
-  z-index: 100;
-}
-
-.dropdown-content a {
-  color: #333;
-  padding: 8px 12px;
-  display: block;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.dropdown-content a:hover {
-  background-color: #e8e8e8;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-/* ===== 商品列表 ===== */
-.product-list {
-  width: 90%;
-  margin: 30px auto;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-/* ===== 單一商品卡 ===== */
-.product-card {
-  display: flex;
-  align-items: center;
-  background-color: #dfe6d2;
-  border-radius: 12px;
-  padding: 20px;
-  gap: 25px;
-}
-
-/* 左側賣家資訊 */
-.seller {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 150px;
-  text-align: center;
-  color: #2f3b1a;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.seller img {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-  background: transparent;
-  border: none;
-}
-
-/* 右側商品資訊 */
-.product-info {
-  flex: 1;
-  text-align: center;
-  color: #2f3b1a;
-}
-
-.product-info img {
-  width: 120px;
-  height: auto;
-  border-radius: 8px;
-  margin: 10px 0;
-  background-color: #fff;
-}
-
-.product-info h3 {
-  margin: 8px 0;
-  font-size: 18px;
-}
-
-.product-info .price {
-  margin: 5px 0;
-  font-weight: 600;
-}
-
-/* 精選商品標籤 */
-.tag {
-  display: inline-block;
-  background-color: #6e7d4d;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-/* 按鈕樣式 */
-.save-btn {
-  background-color: #4a5d23;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-.save-btn:hover {
-  background-color: #3b4b1b;
-}
-
-/* ===== 購物車視窗 ===== */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-}
-
-/* ===== 加入購物車提示視窗 ===== */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: #fff;
-  padding: 25px;
-  border-radius: 10px;
-  width: 320px;
-  text-align: center;
-}
-
-.modal-content h3 {
-  margin: 0;
-  color: #2f3b1a;
-}
-
-.modal-content .save-btn {
-  margin: 10px;
-  background-color: #4a5d23;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 15px;
-  cursor: pointer;
-}
-
-.modal-content .save-btn:hover {
-  background-color: #3b4b1b;
-}
-
-#stars {
-  font-size: 26px;
-  color: gold;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-#reviewText {
-  width: 90%;
-  height: 80px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  resize: none;
-  margin-bottom: 10px;
-}
-
-.review-container {
-  width: 80%;
-  margin: 30px auto;
-  background: #eef2e1;
-  padding: 20px;
-  border-radius: 15px;
-}
-
-.stars {
-  font-size: 32px;
-  color: #ccc;
-  cursor: pointer;
-  letter-spacing: 5px;
-  user-select: none;
-  margin: 15px 0;
-}
-
-.stars .active {
-  color: gold;
-}
-
-.review-container {
-  width: 80%;
-  margin: 30px auto;
-  background-color: #eef2e1;
-  padding: 20px;
-  border-radius: 15px;
-}
-
-.review-container textarea {
-  width: 100%;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 8px;
-  resize: none;
-  margin: 10px 0 15px 0;
-}
-
-.stars {
-  font-size: 30px;
-  letter-spacing: 5px;
-  cursor: pointer;
-  user-select: none;
-  margin: 10px 0 15px 0;
-}
-
-.stars span {
-  color: #ccc;
-}
-
-.stars span.active {
-  color: gold;
-}
-
-.filter-area {
-  width: 90%;
-  margin: 15px auto;
-  display: flex;
-  align-items: center;
+  display:flex;
+  align-items:center;
   gap: 10px;
   font-size: 16px;
+  margin-bottom: 6px;
 }
 
-.filter-area select {
-  padding: 5px 10px;
-  border-radius: 6px;
+.filter-area select{
+  padding: 6px 10px;
+  border-radius: 8px;
   border: 1px solid #888;
   background: #f3f5e6;
   cursor: pointer;
 }
 
-/* ===== 聊天視窗 ===== */
-.chat-box {
-  background: white;
-  width: 350px;
-  padding: 20px;
-  border-radius: 10px;
-  border: 2px solid #446a3f;
-  display: flex;
-  flex-direction: column;
+/* =========================
+   Order Card
+========================= */
+.product-card{
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px 18px 16px 18px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
 }
 
-.chat-messages {
-  height: 250px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #f8f8f8;
+.product-card h3{
+  margin: 0 0 8px 0;
+  font-size: 18px;
 }
 
-.chat-message {
-  margin-bottom: 10px;
-  padding: 6px 8px;
-  border-radius: 6px;
+.product-card p{
+  margin: 6px 0;
+  line-height: 1.35;
 }
 
-.chat-buyer {
-  background: #d6ecd2;
-  align-self: flex-end;
+.product-card .items{
+  font-weight: 600;
 }
 
-.chat-seller {
-  background: #f2e5b8;
-  align-self: flex-start;
+/* cancelled style */
+.product-card.is-disabled{
+  opacity: 0.55;
+  filter: grayscale(0.2);
 }
 
-.chat-input-area {
-  display: flex;
-  gap: 10px;
-}
-
-.close-chat {
-  margin-top: 10px;
-  background: #555;
-
-}
-
-/* ===== 檢舉商品按鈕（紅色警告版） ===== */
-.report-btn {
-  background-color: #b84a4a;     /* 紅色 */
-  color: white;
+/* =========================
+   Buttons
+========================= */
+.save-btn{
+  background-color: var(--btn);
+  color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 5px 10px;             /* 比 save-btn 小一點 */
+  border-radius: 10px;
+  padding: 10px 14px;
   cursor: pointer;
-  font-weight: bold;
-  font-size: 13px;               /* 稍微小 */
-  transition: 0.2s;
-  margin-top: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: 0.15s;
 }
 
-.report-btn:hover {
-  background-color: #a13d3d;     /* 深紅色 */
-}
+.save-btn:hover{ background-color: var(--btn-dark); }
 
-.report-btn:disabled {
-  background-color: #999;        /* 灰色 */
+button:disabled{
+  opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* =========================
+   Modal / Chat
+========================= */
+.modal{
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index: 999;
+}
+.modal.hidden{ display:none; }
+
+.chat-box{
+  width: min(560px, 92vw);
+  height: min(560px, 82vh);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+  padding: 16px;
+  display:flex;
+  flex-direction:column;
+  border: 2px solid var(--chat-border);
+}
+
+.chat-box h3{
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.chat-messages{
+  flex: 1;
+  background: var(--chat-bg);
+  border: 1px solid #e7eadf;
+  border-radius: 12px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+/* message bubble */
+.chat-message{
+  max-width: 78%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  margin: 8px 0;
+  line-height: 1.4;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+/* 對方：左邊 */
+.chat-other{
+  background: var(--chat-other);
+  color: #222;
+  margin-right: auto;
+  border-top-left-radius: 6px;
+}
+
+/* 自己：右邊 */
+.chat-me{
+  background: var(--chat-me);
+  color: #1e2b12;
+  margin-left: auto;
+  border-top-right-radius: 6px;
+}
+
+.chat-input-area{
+  display:flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.chat-input-area input{
+  flex: 1;
+  border: 1px solid #d7dccd;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.close-chat{
+  margin-top: 10px;
+  background: #2f3b1a;
+}
+.close-chat:hover{
+  filter: brightness(0.95);
 }

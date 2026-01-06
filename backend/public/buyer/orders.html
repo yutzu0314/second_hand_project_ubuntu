@@ -90,7 +90,6 @@
 
     let orders = []; // 從後端抓
     const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
-    let chats = JSON.parse(localStorage.getItem("chats")) || {};
     
     const container = document.getElementById("orderContainer");
     const filterSelect = document.getElementById("orderFilter");
@@ -134,7 +133,6 @@
         return;
       }
 
-      // 新 → 舊
       const sorted = [...orders].sort((a, b) => b.order_id - a.order_id);
 
       const filtered = sorted.filter((order) => {
@@ -142,6 +140,7 @@
         if (filter === "all") return true;
         if (filter === "reviewed") return reviewed;
         if (filter === "unreviewed") return !reviewed;
+        return true;
       });
 
       if (!filtered.length) {
@@ -152,33 +151,37 @@
       filtered.forEach(order => {
         const reviewed = reviews.some(r => r.orderId === order.order_id);
 
+        const isCancelled = order.status === "cancelled";
+        const canReview = (order.status === "completed") && !reviewed;
+        const canChat = !isCancelled;
+
         const div = document.createElement("div");
         div.classList.add("product-card");
+        if (isCancelled) div.classList.add("is-disabled");
 
         div.innerHTML = `
-      <h3>訂單編號：${order.order_id}</h3>
-      <p>下單時間：${new Date(order.created_at).toLocaleString()}</p>
+          <h3>訂單編號：${order.order_id}</h3>
+          <p>下單時間：${new Date(order.created_at).toLocaleString()}</p>
+          <p>狀態：<strong>${order.status}</strong></p>
+          <p class="items">商品：${order.product_title}（NT$${order.product_price}）</p>
 
-      <p>狀態：<strong>${order.status}</strong></p>
-      <p class="items">商品：${order.product_title}（NT$${order.product_price}）</p>
+          <button class="save-btn review-btn"
+                  data-id="${order.order_id}"
+                  ${canReview ? "" : "disabled"}>
+            ${reviewed ? "已評價" : (order.status !== "completed" ? "完成後才能評價" : "去評價")}
+          </button>
 
-      <button class="save-btn review-btn"
-              data-id="${order.order_id}"
-              ${reviewed ? "disabled" : ""}>
-        ${reviewed ? "已評價" : "去評價"}
-      </button>
-
-      <button class="save-btn contact-btn"
-              data-id="${order.order_id}"
-              data-items="${order.product_title}">
-        聯絡賣家
-      </button>
-    `;
+          <button class="save-btn contact-btn"
+                  data-id="${order.order_id}"
+                  data-items="${order.product_title}"
+                  ${canChat ? "" : "disabled"}>
+            聯絡賣家
+          </button>
+        `;
 
         container.appendChild(div);
       });
     }
-
 
     // =======================
     // ===== 聊天功能 =======
@@ -201,63 +204,112 @@
 
       chatModal.classList.remove("hidden");
       loadChatMessages();
+      startChatPolling();
     }
 
     // 顯示聊天紀錄
-    function loadChatMessages() {
+    async function loadChatMessages() {
       chatMessages.innerHTML = "";
 
-      const msgs = chats[currentChatOrderId] || [];
+      try {
+        const qs = new URLSearchParams({
+          order_id: currentChatOrderId,
+          user_id: currentUser.id
+        });
 
-      msgs.forEach(m => {
-        const div = document.createElement("div");
-        div.classList.add("chat-message");
-        div.classList.add(m.from === "buyer" ? "chat-buyer" : "chat-seller");
-        div.textContent = m.text;
-        chatMessages.appendChild(div);
-      });
+        const res = await fetch(`/api/messages/list?${qs.toString()}`);
+        const data = await res.json();
 
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (!res.ok) throw new Error(data.error || "load messages failed");
+
+        (data.items || []).forEach(m => {
+          const div = document.createElement("div");
+          div.classList.add("chat-message");
+          div.classList.add(m.sender_id === currentUser.id ? "chat-me" : "chat-other");
+
+          div.textContent = m.content;
+          chatMessages.appendChild(div);
+        });
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (e) {
+        console.error(e);
+        chatMessages.innerHTML = `<div style="padding:8px;">載入訊息失敗</div>`;
+      }
     }
 
+
     // 發送聊天訊息
-    sendChatBtn.onclick = () => {
+    sendChatBtn.onclick = async () => {
       const text = chatInput.value.trim();
       if (!text) return;
 
-      if (!chats[currentChatOrderId]) chats[currentChatOrderId] = [];
+      try {
+        const res = await fetch(`/api/messages/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_id: Number(currentChatOrderId),
+            sender_id: Number(currentUser.id),
+            content: text
+          })
+        });
 
-      chats[currentChatOrderId].push({
-        from: "buyer",
-        text,
-        time: new Date().toLocaleTimeString()
-      });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert(data.error || `送出失敗 (${res.status})`);
+          return;
+        }
 
-      localStorage.setItem("chats", JSON.stringify(chats));
-      chatInput.value = "";
-      loadChatMessages();
+        chatInput.value = "";
+        await loadChatMessages();
+      } catch (e) {
+        console.error(e);
+        alert("送出訊息時發生錯誤");
+      }
     };
 
-    // 關閉聊天
-    closeChat.onclick = () => chatModal.classList.add("hidden");
+    //輪詢
+    let chatPollTimer = null;
 
+    function startChatPolling() {
+      stopChatPolling();
+      chatPollTimer = setInterval(() => {
+        if (currentChatOrderId) loadChatMessages();
+      }, 2000);
+    }
+
+    function stopChatPolling() {
+      if (chatPollTimer) clearInterval(chatPollTimer);
+      chatPollTimer = null;
+    }
+
+
+    // 關閉聊天
+    closeChat.onclick = () => {
+      chatModal.classList.add("hidden");
+      stopChatPolling();
+      currentChatOrderId = null;
+    }
     // 點擊聯絡賣家
     document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("contact-btn")) {
-        const orderId = e.target.dataset.id;
-        const productNames = e.target.dataset.items;
+      const contactBtn = e.target.closest("button.contact-btn");
+      if (contactBtn) {
+        if (contactBtn.disabled) return; // ✅ 擋掉 disabled
+        const orderId = contactBtn.dataset.id;
+        const productNames = contactBtn.dataset.items || "";
         openChat(orderId, productNames);
+        return;
+      }
+
+      const reviewBtn = e.target.closest("button.review-btn");
+      if (reviewBtn) {
+        if (reviewBtn.disabled) return; // ✅ 擋掉 disabled
+        const orderId = reviewBtn.dataset.id;
+        window.location.href = `rate.html?orderId=${orderId}`;
       }
     });
-    // 點擊「去評價」
-    document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("review-btn")) {
-        const orderId = e.target.dataset.id;
-        if (!e.target.disabled) {
-          window.location.href = `rate.html?orderId=${orderId}`;
-        }
-      }
-    });
+
 
     // 初次載入時，先打 API 抓訂單
     fetchBuyerOrders();

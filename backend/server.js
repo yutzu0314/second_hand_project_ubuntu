@@ -16,7 +16,7 @@ import reportsRouter from './routes/reports.js';
 import ordersRouter from './routes/orders.js';
 import productsRouter from './routes/products.js';
 import announcementsRouter from './routes/announcements.js';
-
+import messagesRouter from "./routes/messages.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,6 +60,9 @@ app.use('/api/order', ordersRouter);
 app.use('/api/products', productsRouter);
 app.use(announcementsRouter);
 app.use('/shared', express.static(path.join(__dirname, 'public/shared')));
+app.use("/api/messages", messagesRouter);
+app.use("/api/reviews", require("./routes/reviews"));
+
 
 const port = Number(process.env.PORT || 3000);
 
