@@ -10,7 +10,7 @@
 
 <body>
 
-  <!-- ===== 統一後的導覽列 ===== -->
+  <!-- ===== 導覽列 ===== -->
   <div class="navbar">
     <div class="nav-left">
       <img src="images/logo.png" alt="ReuseX Logo" class="logo-img">
@@ -30,18 +30,7 @@
     </div>
   </div>
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-  <!-- ===== Banner ===== -->
-=======
->>>>>>> Stashed changes
-=======
-<<<<<<< HEAD
-  <!-- ===== Banner ===== -->
-=======
->>>>>>> Stashed changes
+  <!-- ===== 公告列 ===== -->
   <div id="announcementBar" class="announcement-bar">
     <div class="announcement-inner">
       <span class="icon">📢</span>
@@ -49,9 +38,7 @@
     </div>
   </div>
 
-
-  <!-- ===== Banner（保留你的風格，可有可無）===== -->
->>>>>>> 4a3928c8a8911280224803de55313c3a35cfa952
+  <!-- ===== Banner ===== -->
   <div class="banner">
     <h2>ReuseX — 找到下一個珍惜它的主人。</h2>
     <p>高品質二手商品 · 值得信賴的交易體驗</p>
@@ -66,7 +53,6 @@
       <h3>🛍 購物車清單</h3>
       <ul id="cartItems"></ul>
 
-      <!-- ✅ 測試下單按鈕（重點） -->
       <button id="testOrder" class="save-btn">
         🧪 測試下單（建立訂單）
       </button>
@@ -76,7 +62,7 @@
     </div>
   </div>
 
-  <!-- ===== 加入購物車提示視窗 ===== -->
+  <!-- ===== 加入購物車提示 ===== -->
   <div id="addedModal" class="modal hidden">
     <div class="modal-content">
       <h3>✅ 已加入購物車！</h3>
@@ -87,17 +73,11 @@
     </div>
   </div>
 
-  <!-- 你原本的 JS -->
+  <!-- ===== JS ===== -->
   <script src="buyer.js" defer></script>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   <script src="/shared/announcement_bar.js"></script>
-=======
-=======
->>>>>>> Stashed changes
-<<<<<<< HEAD
 
-  <!-- ✅ 共用訂單 module（一定要放在 body 最後） -->
+  <!-- ===== 測試下單 module ===== -->
   <script type="module">
     import { initDB, getOrders, createOrder } from "../shared/api.js";
 
@@ -106,7 +86,7 @@
 
     const btn = document.querySelector("#testOrder");
 
-    btn.addEventListener("click", () => {
+    btn?.addEventListener("click", () => {
       const newOrder = {
         orderId: "ORD" + Date.now(),
         buyerId: "B001",
@@ -126,13 +106,5 @@
     });
   </script>
 
-=======
-  <script src="/shared/announcement_bar.js"></script>
->>>>>>> 4a3928c8a8911280224803de55313c3a35cfa952
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 </body>
-
 </html>

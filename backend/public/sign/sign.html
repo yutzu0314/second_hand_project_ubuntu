@@ -118,50 +118,63 @@
     </div>
   </div>
 
-  <script>
-    const sellerBtn = document.getElementById("sellerBtn");
-    const buyerBtn = document.getElementById("buyerBtn");
-    const registerBtn = document.getElementById("registerBtn");
+<script>
+  const sellerBtn = document.getElementById("sellerBtn");
+  const buyerBtn = document.getElementById("buyerBtn");
+  const registerBtn = document.getElementById("registerBtn");
 
-    let role = "seller";
+  let role = "seller";
 
-    sellerBtn.onclick = () => {
-      role = "seller";
-      sellerBtn.classList.add("active");
-      buyerBtn.classList.remove("active");
-    };
+  sellerBtn.onclick = () => {
+    role = "seller";
+    sellerBtn.classList.add("active");
+    buyerBtn.classList.remove("active");
+  };
 
-    buyerBtn.onclick = () => {
-      role = "buyer";
-      buyerBtn.classList.add("active");
-      sellerBtn.classList.remove("active");
-    };
+  buyerBtn.onclick = () => {
+    role = "buyer";
+    buyerBtn.classList.add("active");
+    sellerBtn.classList.remove("active");
+  };
 
-    registerBtn.onclick = () => {
-      const user = document.getElementById("regUser").value.trim();
-      const pass = document.getElementById("regPass").value.trim();
+  registerBtn.onclick = async () => {
+    const user = document.getElementById("regUser").value.trim();
+    const pass = document.getElementById("regPass").value.trim();
 
-      if (!user || !pass) {
-        alert("帳號與密碼不可為空！");
+    if (!user || !pass) {
+      alert("帳號與密碼不可為空！");
+      return;
+    }
+
+    try {
+      // ✅ 你的後端就在同一個網域/port (http://localhost:3000)
+      // 若你之後前後端分開，才需要改成完整 URL
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: user,
+          password: pass,
+          role: role, // "seller" / "buyer"
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        // 後端建議回 { message: "..." }
+        alert(data.message || "註冊失敗，請稍後再試");
         return;
       }
-
-      // 讀出現有資料
-      let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-
-      // 檢查重複帳號
-      if (accounts.some(acc => acc.user === user)) {
-        alert("此帳號已被註冊！");
-        return;
-      }
-
-      // 新增帳號
-      accounts.push({ user, pass, role });
-      localStorage.setItem("accounts", JSON.stringify(accounts));
 
       alert("註冊成功！");
       window.location.href = "/login/login.html";
-    };
-  </script>
+    } catch (err) {
+      console.error(err);
+      alert("無法連線到伺服器，請確認後端是否啟動");
+    }
+  };
+</script>
+
 </body>
 </html>
