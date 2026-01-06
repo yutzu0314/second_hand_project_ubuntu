@@ -476,6 +476,7 @@ body {
 .close-chat {
   margin-top: 10px;
   background: #555;
+<<<<<<< HEAD
 }
 
 /* ===== 檢舉商品按鈕（紅色警告版） ===== */
@@ -500,3 +501,9 @@ body {
   background-color: #999;        /* 灰色 */
   cursor: not-allowed;
 }
+<<<<<<< Updated upstream
+=======
+=======
+}
+>>>>>>> 4a3928c8a8911280224803de55313c3a35cfa952
+>>>>>>> Stashed changes
