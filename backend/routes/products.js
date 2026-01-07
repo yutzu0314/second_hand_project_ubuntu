@@ -142,7 +142,7 @@ router.post("/create", async (req, res) => {
     description = null,
     price,
     status = "on_sale",
-    cover_image_url = null,
+    cover_image_url = "",
   } = req.body;
 
   if (!seller_id || !title || !price) {
@@ -175,5 +175,133 @@ router.post("/create", async (req, res) => {
     httpError(res, 500, "create_product failed");
   }
 });
+
+/**
+ * @swagger
+ * /api/products/update:
+ *   put:
+ *     summary: 更新商品（賣家）
+ *     tags: [Products]
+ */
+router.put("/update", async (req, res) => {
+  const { product_id, seller_id, title, description, price } = req.body;
+
+  if (!product_id || !seller_id || !title || price === undefined) {
+    return httpError(res, 400, "product_id, seller_id, title, price required");
+  }
+
+  const t = String(title).trim();
+  if (!t) return httpError(res, 400, "title cannot be empty");
+
+  const p = Number(price);
+  if (!Number.isFinite(p) || p <= 0) return httpError(res, 400, "invalid price");
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 只允許賣家改自己的商品，且避免改到已售出/保留（可依你們規則調整）
+    const [rows] = await conn.query(
+      "SELECT * FROM products WHERE product_id=? FOR UPDATE",
+      [Number(product_id)]
+    );
+    if (!rows.length) {
+      await conn.rollback();
+      return httpError(res, 404, "Product not found");
+    }
+
+    const product = rows[0];
+    if (Number(product.seller_id) !== Number(seller_id)) {
+      await conn.rollback();
+      return httpError(res, 403, "Not your product");
+    }
+
+    if (["sold", "reserved"].includes(product.status)) {
+      await conn.rollback();
+      return httpError(res, 400, "Cannot edit sold/reserved product");
+    }
+
+    await conn.query(
+      "UPDATE products SET title=?, description=?, price=? WHERE product_id=?",
+      [t, description ?? null, p, Number(product_id)]
+    );
+
+    await conn.commit();
+
+    const [newRows] = await pool.query(
+      "SELECT * FROM products WHERE product_id=?",
+      [Number(product_id)]
+    );
+    res.json(newRows[0]);
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    httpError(res, 500, "update_product failed");
+  } finally {
+    conn.release();
+  }
+});
+
+/**
+ * @swagger
+ * /api/products/delete:
+ *   delete:
+ *     summary: 刪除商品（真刪除）
+ *     tags: [Products]
+ */
+router.delete("/delete", async (req, res) => {
+  const { product_id, seller_id } = req.body;
+
+  if (!product_id || !seller_id) {
+    return httpError(res, 400, "product_id & seller_id required");
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [pRows] = await conn.query(
+      "SELECT * FROM products WHERE product_id=? FOR UPDATE",
+      [Number(product_id)]
+    );
+    if (!pRows.length) {
+      await conn.rollback();
+      return httpError(res, 404, "Product not found");
+    }
+
+    const product = pRows[0];
+    if (Number(product.seller_id) !== Number(seller_id)) {
+      await conn.rollback();
+      return httpError(res, 403, "Not your product");
+    }
+
+    // ✅ 若已經有訂單，真刪除會讓系統資料斷掉（也可能外鍵會擋）
+    const [oRows] = await conn.query(
+      "SELECT COUNT(*) AS cnt FROM orders WHERE product_id=?",
+      [Number(product_id)]
+    );
+    if (Number(oRows[0].cnt) > 0) {
+      await conn.rollback();
+      return httpError(res, 409, "This product has orders, cannot delete");
+    }
+
+    // 可選：若有 messages / reviews 也要一起擋或先刪（依你們 schema）
+    await conn.query("DELETE FROM products WHERE product_id=?", [Number(product_id)]);
+
+    await conn.commit();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("create_product failed:", err);
+    return res.status(500).json({
+      error: "create_product failed",
+      code: err.code,
+      sqlMessage: err.sqlMessage,
+      message: err.message,
+    });
+  } finally {
+    conn.release();
+  }
+});
+
 
 export default router;

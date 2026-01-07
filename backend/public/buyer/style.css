@@ -26,30 +26,135 @@ body{
 }
 
 /* =========================
-   Navbar
+   Navbar (恢復成首頁原本樣式)
 ========================= */
 .navbar{
   background-color: var(--nav);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 10px 40px;
 }
 
-.nav-left{ display:flex; align-items:center; gap:10px; }
-
-.nav-left a{
-  color: var(--ink);
-  text-decoration:none;
-  font-size: 15px;
-  margin: 0 6px;
+/* 左/右區塊都要吃到同樣的 flex 規則 */
+.nav-left,
+.nav-right{
+  display: flex;
+  align-items: center;
 }
-.nav-left a:hover{ text-decoration: underline; }
 
+/* 連結樣式：跟原本一致 */
+.nav-left a,
+.nav-right a{
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  margin: 0 10px;
+}
+.nav-left a:hover,
+.nav-right a:hover{
+  text-decoration: underline;
+}
+
+/* LOGO（原本高度比較大） */
 .logo-img{
-  height: 56px;
+  height: 60px;
+  margin-right: 15px;
   border-radius: 10px;
-  margin-right: 6px;
+}
+
+/* 使用者頭像：避免變超大（你左圖爆掉就是這個常見原因） */
+.user-icon{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-left: 15px;
+  margin-right: 10px;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+/* 保險：如果首頁右上角放的是 img 但沒加 class，也不要爆版 */
+.nav-right img{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* 搜尋框（首頁用得到） */
+.search-box{
+  display: flex;
+  align-items: center;
+  background-color: var(--card);
+  border-radius: 25px;
+  padding: 5px 10px;
+  width: 350px;
+  max-width: 45vw; /* 小螢幕別撐爆 */
+}
+
+.search-box input{
+  border: none;
+  background: none;
+  outline: none;
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.search-box button{
+  background-color: var(--btn);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+.search-box button:hover{
+  background-color: var(--btn-dark);
+}
+
+/* 下拉選單（若首頁/其他頁有用到） */
+.dropdown{
+  position: relative;
+  display: inline-block;
+  margin-right: 25px;
+}
+
+.dropdown button{
+  background-color: transparent;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.dropdown-content{
+  display: none;
+  position: absolute;
+  top: 25px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  min-width: 130px;
+  z-index: 100;
+}
+
+.dropdown-content a{
+  color: #333;
+  padding: 8px 12px;
+  display: block;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.dropdown-content a:hover{
+  background-color: #e8e8e8;
+}
+
+.dropdown:hover .dropdown-content{
+  display: block;
 }
 
 /* =========================
@@ -227,3 +332,50 @@ button:disabled{
 .close-chat:hover{
   filter: brightness(0.95);
 }
+
+.announcement-bar{
+  width: 100%;
+  background-color: #fff8d6;
+  border-bottom: 1px solid #e6dca5;
+  padding: 10px 0;
+  color: #6a5d1b;
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  display: none; /* JS 會開啟 */
+  letter-spacing: 0.5px;
+  overflow: hidden;
+
+  display: flex;              /* ✅ 關鍵 */
+  align-items: center;
+}
+
+
+.announcement-inner{
+  flex: 1;                    /* 撐滿剩餘空間 */
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-right: 20px;
+
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.announcement-icon {
+  flex-shrink: 0;             /* 不被壓縮 */
+  font-size: 18px;
+  margin-left: 16px;          /* 與左邊留點距離 */
+  margin-right: 10px;         /* 與文字距離 */
+}
+
+.announcement-scroll{
+  display: inline-block;
+  animation: scroll-left 12s linear infinite;
+}
+
+@keyframes scroll-left{
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+

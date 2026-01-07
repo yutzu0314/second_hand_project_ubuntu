@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,11 +29,15 @@
       justify-content: space-between;
       padding: 8px 40px;
     }
-    .nav-left, .nav-right {
+
+    .nav-left,
+    .nav-right {
       display: flex;
       align-items: center;
     }
-    .nav-left a, .nav-right a {
+
+    .nav-left a,
+    .nav-right a {
       color: var(--ink);
       text-decoration: none;
       font-size: 15px;
@@ -49,7 +54,8 @@
     }
 
     .search-box input {
-      border: none; outline: none;
+      border: none;
+      outline: none;
       background: transparent;
       font-size: 14px;
       padding: 6px;
@@ -68,44 +74,48 @@
 
     /* 下拉選單 */
     /* ===== 賣家中心下拉選單（統一樣式） ===== */
-.dropdown {
-  position: relative;
-}
+    .dropdown {
+      position: relative;
+    }
 
-.dropdown > a {
-  font-weight: 600;
-}
+    .dropdown>a {
+      font-weight: 600;
+    }
 
-.dropdown-content {
-  display: none;
-  position: absolute;
-  top: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #f8f8ef;       /* 米白底 */
-  border-radius: 14px;             /* 圓角 */
-  padding: 10px 0;
-  min-width: 160px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  z-index: 100;
-}
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #f8f8ef;
+      /* 米白底 */
+      border-radius: 14px;
+      /* 圓角 */
+      padding: 10px 0;
+      min-width: 160px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+      z-index: 100;
+    }
 
-.dropdown-content a {
-  display: block;
-  padding: 10px 20px;              /* 左右留白 */
-  font-size: 15px;
-  color: #2f3b1a;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
-}
+    .dropdown-content a {
+      display: block;
+      padding: 10px 20px;
+      /* 左右留白 */
+      font-size: 15px;
+      color: #2f3b1a;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
 
-.dropdown-content a:hover {
-  background-color: #e4ead7;       /* hover 淡綠 */
-}
+    .dropdown-content a:hover {
+      background-color: #e4ead7;
+      /* hover 淡綠 */
+    }
 
-.dropdown:hover .dropdown-content {
-  display: block;
-}
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
 
 
     /* 主要內容 */
@@ -149,7 +159,7 @@
       border-radius: 12px;
       display: grid;
       place-items: center;
-      box-shadow: 0 1px 0 rgba(0,0,0,0.04) inset;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
     }
 
     .product-thumb img {
@@ -158,21 +168,37 @@
       object-fit: contain;
     }
 
-    .product-right { flex: 1; min-width: 0; }
-    .form-row {
-      display: flex; align-items: center;
-      gap: 14px; margin: 12px 0;
+    .product-right {
+      flex: 1;
+      min-width: 0;
     }
-    .form-row label { flex: 0 0 110px; font-weight: 700; }
-    .form-row input, .form-row select {
-      flex: 1; padding: 10px 12px;
-      border: 1px solid #cfd6c3; border-radius: 8px;
-      background: #eef3e6; font-size: 15px;
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 12px 0;
+    }
+
+    .form-row label {
+      flex: 0 0 110px;
+      font-weight: 700;
+    }
+
+    .form-row input,
+    .form-row select {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #cfd6c3;
+      border-radius: 8px;
+      background: #eef3e6;
+      font-size: 15px;
       outline: none;
     }
+
     .form-row input:focus {
       border-color: #9bb081;
-      box-shadow: 0 0 0 3px rgba(155,176,129,.18);
+      box-shadow: 0 0 0 3px rgba(155, 176, 129, .18);
       background: #fff;
     }
 
@@ -193,53 +219,60 @@
       letter-spacing: 0.5px;
     }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tab-content {
+      display: none;
+    }
 
-  
-.button-group {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-}
+    .tab-content.active {
+      display: block;
+    }
 
-.button-group button {
-  color: #fff;
-  border: none;
-  padding: 10px 25px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s ease;
-}
 
-/* 綠色更新鍵 */
-.update-btn {
-  background-color: #606C38 !important;
-}
-.update-btn:hover {
-  background-color: #4C572E !important;
-}
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
 
-/* 紅色刪除鍵 */
-.delete-btn {
-  background-color: #B84A4A !important;
-}
-.delete-btn:hover {
-  background-color: #A13D3D !important;
-}
-</style>
+    .button-group button {
+      color: #fff;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.2s ease;
+    }
+
+    /* 綠色更新鍵 */
+    .update-btn {
+      background-color: #606C38 !important;
+    }
+
+    .update-btn:hover {
+      background-color: #4C572E !important;
+    }
+
+    /* 紅色刪除鍵 */
+    .delete-btn {
+      background-color: #B84A4A !important;
+    }
+
+    .delete-btn:hover {
+      background-color: #A13D3D !important;
+    }
+  </style>
 
   </style>
 </head>
 
 <body>
- <!-- 導覽列 -->
-<div class="navbar">
-  <div class="nav-left">
-    <div class="logo" style="
+  <!-- 導覽列 -->
+  <div class="navbar">
+    <div class="nav-left">
+      <div class="logo" style="
       background-color: var(--green);
       color: white;
       font-weight: 700;
@@ -251,32 +284,32 @@
       justify-content: center;
       font-size: 22px;">二手</div>
 
-    <div class="search-box">
-      <input type="text" placeholder="搜尋商品..." />
-      <button>🔍</button>
-    </div>
-  </div>
-
-  <div class="nav-right">
-    <div class="dropdown">
-      <a href="#">賣家中心 ▼</a>
-      <div class="dropdown-content">
-        <a href="#" onclick="showTab('add')">刊登商品</a>
-        <a href="#" onclick="showTab('edit')">編輯商品</a>
-        <a href="orders.html">檢視訂單</a>
-        <a href="review.html">評價管理</a>
+      <div class="search-box">
+        <input type="text" placeholder="搜尋商品..." />
+        <button>🔍</button>
       </div>
     </div>
 
-    <a href="#">訊息</a>
-    <a href="#">購物車</a>
+    <div class="nav-right">
+      <div class="dropdown">
+        <a href="#">賣家中心 ▼</a>
+        <div class="dropdown-content">
+          <a href="#" onclick="showTab('add')">刊登商品</a>
+          <a href="#" onclick="showTab('edit')">編輯商品</a>
+          <a href="orders.html">檢視訂單</a>
+          <a href="review.html">評價管理</a>
+        </div>
+      </div>
 
-    <!-- ⭐ 只加功能，不改排版 -->
-    <a href="../buyer/buyer.html">買家系統</a>
-    <a href="signup.html">SIGN UP</a>
-    <a href="login.html">LOGIN</a>
+      <a href="#">訊息</a>
+      <a href="#">購物車</a>
+
+      <!-- ⭐ 只加功能，不改排版 -->
+      <a href="../buyer/buyer.html">買家系統</a>
+      <a href="signup.html">SIGN UP</a>
+      <a href="login.html">LOGIN</a>
+    </div>
   </div>
-</div>
 
   <!-- 商品區域 -->
   <div class="product-container">
@@ -339,141 +372,253 @@
             <input type="text" id="edit-price" placeholder="輸入新售價">
           </div>
           <div class="button-group">
-  <button class="update-btn">更新</button>
-  <button class="delete-btn">刪除</button>
-</div>
+            <button class="update-btn">更新</button>
+            <button class="delete-btn">刪除</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-<script>
-  // === 模擬商品資料 ===
-  let products = [];
+  <script>
 
-  // === 初始化 ===
-  document.addEventListener("DOMContentLoaded", () => {
-    renderProductOptions();
-  });
+    function loadCurrentSeller() {
+      try {
+        const raw = localStorage.getItem("auth");
+        if (raw && raw !== "null" && raw !== "undefined") {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.id && parsed.role === "seller") return parsed;
+        }
+      } catch (e) { }
 
-  // === 刊登商品（儲存新商品） ===
-  function saveProduct() {
-    const name = document.getElementById("add-name").value.trim();
-    const desc = document.getElementById("add-desc").value.trim();
-    const price = document.getElementById("add-price").value.trim();
-
-    if (!name || !desc || !price) {
-      alert("請完整輸入商品資料！");
-      return;
+      const idStr = localStorage.getItem("user_id");
+      const role = localStorage.getItem("role");
+      if (idStr && role === "seller") {
+        return { id: Number(idStr), role };
+      }
+      return null;
     }
 
-    // 新增商品
-    products.push({ name, desc, price });
-    alert(`✅ 商品「${name}」已新增！`);
+    const currentSeller = loadCurrentSeller();
+    const API_BASE = ""; // 同網域就留空
 
-    // 清空欄位
-    document.getElementById("add-name").value = "";
-    document.getElementById("add-desc").value = "";
-    document.getElementById("add-price").value = "";
+    // === 模擬商品資料 ===
+    let products = [];
 
-    // 更新下拉選單
-    renderProductOptions();
-  }
+    async function fetchSellerProducts() {
+      if (!currentSeller) return;
 
-  // === 重新渲染編輯商品下拉選單 ===
-  function renderProductOptions() {
-    const select = document.getElementById("edit-select");
-    select.innerHTML = '<option value="">請選擇商品</option>';
-    products.forEach((p, i) => {
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = p.name;
-      select.appendChild(opt);
+      try {
+        const qs = new URLSearchParams({ seller_id: currentSeller.id });
+        const res = await fetch(`${API_BASE}/api/products/list?${qs.toString()}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "list products failed");
+
+        products = data.items || [];
+        renderProductOptions();
+      } catch (e) {
+        console.error(e);
+        alert("載入賣家商品失敗");
+      }
+    }
+
+
+    // === 初始化 ===
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!currentSeller) {
+        alert("請先登入賣家帳號");
+        return;
+      }
+      await fetchSellerProducts();
     });
-  }
 
-  // === 載入商品資料到輸入欄 ===
-  function loadProductToEdit() {
-    const select = document.getElementById("edit-select");
-    const index = select.value;
 
-    if (index === "") {
-      document.getElementById("edit-name").value = "";
-      document.getElementById("edit-desc").value = "";
-      document.getElementById("edit-price").value = "";
-      return;
+    // === 刊登商品（儲存新商品） ===
+    async function saveProduct() {
+      if (!currentSeller) {
+        alert("請先登入賣家帳號再刊登商品！");
+        return;
+      }
+
+      const title = document.getElementById("add-name").value.trim();
+      const description = document.getElementById("add-desc").value.trim();
+      const priceStr = document.getElementById("add-price").value.trim();
+      const price = Number(priceStr);
+
+      if (!title || !description || !priceStr) {
+        alert("請完整輸入商品資料！");
+        return;
+      }
+      if (!Number.isFinite(price) || price <= 0) {
+        alert("售價請輸入正確的數字！");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/products/create`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            seller_id: currentSeller.id,
+            title,
+            description,
+            price,
+            status: "on_sale",
+            cover_image_url: null
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert(data.error || `刊登失敗 (${res.status})`);
+          return;
+        }
+
+        alert(`✅ 商品「${data.title}」已成功刊登！`);
+
+        // 清空欄位
+        document.getElementById("add-name").value = "";
+        document.getElementById("add-desc").value = "";
+        document.getElementById("add-price").value = "";
+
+        // 重新載入商品清單（讓 edit 下拉選單同步 DB）
+        await fetchSellerProducts();
+        showTab("edit");
+      } catch (e) {
+        console.error(e);
+        alert("刊登商品時發生錯誤");
+      }
     }
 
-    const product = products[index];
-    document.getElementById("edit-name").value = product.name;
-    document.getElementById("edit-desc").value = product.desc;
-    document.getElementById("edit-price").value = product.price;
-  }
 
-  // === 更新商品 ===
-  document.querySelector(".update-btn").addEventListener("click", () => {
-    const select = document.getElementById("edit-select");
-    const index = select.value;
+    // === 重新渲染編輯商品下拉選單 ===
+    function renderProductOptions() {
+      const select = document.getElementById("edit-select");
+      select.innerHTML = '<option value="">請選擇商品</option>';
 
-    if (index === "") {
-      alert("請先選擇要更新的商品！");
-      return;
+      products.forEach((p, i) => {
+        const opt = document.createElement("option");
+        opt.value = p.product_id;                // ✅ 用 product_id
+        opt.textContent = `#${p.product_id} ${p.title}`; // ✅ 顯示 title
+        select.appendChild(opt);
+      });
     }
 
-    const newName = document.getElementById("edit-name").value.trim();
-    const newDesc = document.getElementById("edit-desc").value.trim();
-    const newPrice = document.getElementById("edit-price").value.trim();
+    // === 載入商品資料到輸入欄 ===
+    function loadProductToEdit() {
+      const select = document.getElementById("edit-select");
+      const pid = Number(select.value);
 
-    if (!newName || !newDesc || !newPrice) {
-      alert("請完整填寫所有欄位！");
-      return;
+      if (!pid) {
+        document.getElementById("edit-name").value = "";
+        document.getElementById("edit-desc").value = "";
+        document.getElementById("edit-price").value = "";
+        return;
+      }
+
+      const product = products.find(p => Number(p.product_id) === pid);
+      if (!product) return;
+
+      document.getElementById("edit-name").value = product.title ?? "";
+      document.getElementById("edit-desc").value = product.description ?? "";
+      document.getElementById("edit-price").value = product.price ?? "";
     }
 
-    // 更新商品資料
-    products[index] = { name: newName, desc: newDesc, price: newPrice };
-    alert(`✅ 商品「${newName}」已更新！`);
 
-    // 重新更新選單顯示
-    renderProductOptions();
-    document.getElementById("edit-select").value = index;
-  });
+    // === 更新商品 ===
+    document.querySelector(".update-btn").addEventListener("click", async () => {
+      const pid = Number(document.getElementById("edit-select").value);
+      if (!pid) {
+        alert("請先選擇要更新的商品！");
+        return;
+      }
 
-  // === 刪除商品 ===
-  document.querySelector(".delete-btn").addEventListener("click", () => {
-    const select = document.getElementById("edit-select");
-    const index = select.value;
+      const title = document.getElementById("edit-name").value.trim();
+      const description = document.getElementById("edit-desc").value.trim();
+      const price = Number(document.getElementById("edit-price").value.trim());
 
-    if (index === "") {
-      alert("請先選擇要刪除的商品！");
-      return;
-    }
+      if (!title || !description || !Number.isFinite(price) || price <= 0) {
+        alert("請完整填寫且售價需為正確數字！");
+        return;
+      }
 
-    const productName = products[index].name;
-    if (confirm(`確定要刪除「${productName}」嗎？`)) {
-      products.splice(index, 1);
-      alert(`🗑️ 「${productName}」已刪除！`);
-      renderProductOptions();
+      try {
+        const res = await fetch(`${API_BASE}/api/products/update`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: pid,
+            seller_id: currentSeller.id,
+            title,
+            description,
+            price
+          })
+        });
 
-      // 清空欄位
-      document.getElementById("edit-name").value = "";
-      document.getElementById("edit-desc").value = "";
-      document.getElementById("edit-price").value = "";
-    }
-  });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert(data.error || `更新失敗 (${res.status})`);
+          return;
+        }
 
-  // === 分頁切換 ===
-  function showTab(tab) {
-    document.querySelectorAll(".tab-content").forEach(div => {
-      div.classList.remove("active");
+        alert(`✅ 商品已更新：${data.title}`);
+        await fetchSellerProducts();
+        document.getElementById("edit-select").value = String(pid);
+        loadProductToEdit();
+      } catch (e) {
+        console.error(e);
+        alert("更新商品時發生錯誤");
+      }
     });
-    document.getElementById("tab-" + tab).classList.add("active");
-  }
-</script>
 
+    // === 刪除商品 ===
+    document.querySelector(".delete-btn").addEventListener("click", async () => {
+      const pid = Number(document.getElementById("edit-select").value);
+      if (!pid) {
+        alert("請先選擇要刪除的商品！");
+        return;
+      }
 
+      const product = products.find(p => Number(p.product_id) === pid);
+      const title = product?.title || `#${pid}`;
 
+      if (!confirm(`確定要刪除「${title}」嗎？（資料會從資料庫消失）`)) return;
 
+      try {
+        const res = await fetch(`${API_BASE}/api/products/delete`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: pid,
+            seller_id: currentSeller.id
+          })
+        });
 
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert(data.error || `刪除失敗 (${res.status})`);
+          return;
+        }
 
+        alert("🗑️ 已刪除商品");
+        await fetchSellerProducts();
 
+        // 清空欄位
+        document.getElementById("edit-select").value = "";
+        loadProductToEdit();
+      } catch (e) {
+        console.error(e);
+        alert("刪除商品時發生錯誤");
+      }
+    });
+
+    // === 分頁切換 ===
+    function showTab(tab) {
+      document.querySelectorAll(".tab-content").forEach(div => {
+        div.classList.remove("active");
+      });
+      document.getElementById("tab-" + tab).classList.add("active");
+    }
+  </script>
 </body>
+
 </html>

@@ -49,53 +49,53 @@ router.post("/create", async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 1) 檢查商品存在且 on_sale
+    // 1) 鎖商品
     const [pRows] = await conn.query(
-      "SELECT * FROM products WHERE product_id = ? FOR UPDATE",
-      [product_id]
+      "SELECT product_id, seller_id, price, status FROM products WHERE product_id=? FOR UPDATE",
+      [Number(product_id)]
     );
-    if (pRows.length === 0) {
+    if (!pRows.length) {
       await conn.rollback();
       return httpError(res, 404, "Product not found");
     }
+
     const product = pRows[0];
-    if (product.status !== "reserved") {
+
+    // ✅ 正確：要能下單，商品必須是 on_sale
+    if (product.status !== "on_sale") {
       await conn.rollback();
-      return httpError(res, 400, "Product not reserved");
-    }
-    if (product.buyer_id !== order.buyer_id) {
-      await conn.rollback();
-      return httpError(res, 400, "Reserved buyer mismatch");
+      return httpError(res, 400, "Product is not available");
     }
 
+    // 2) 先把商品改成 reserved（避免兩個人同時下單）
+    const [uRet] = await conn.query(
+      "UPDATE products SET status='reserved', buyer_id=? WHERE product_id=? AND status='on_sale'",
+      [Number(buyer_id), Number(product_id)]
+    );
+    if (uRet.affectedRows === 0) {
+      await conn.rollback();
+      return httpError(res, 409, "Product already reserved");
+    }
 
-    // 2) 建 order（鎖價 order_price）
+    // 3) 建立訂單（鎖價）
     const [oRet] = await conn.query(
       `INSERT INTO orders (product_id, buyer_id, seller_id, order_price, status)
        VALUES (?, ?, ?, ?, 'pending')`,
-      [product_id, buyer_id, product.seller_id, product.price]
+      [Number(product_id), Number(buyer_id), Number(product.seller_id), Number(product.price)]
     );
 
     const order_id = oRet.insertId;
-    await conn.query(
-      "UPDATE products SET status='reserved', buyer_id=? WHERE product_id=?",
-      [buyer_id, product_id]
-    );
 
-
-    // 3) log
+    // 4) log
     await conn.query(
       `INSERT INTO order_status_logs (order_id, from_status, to_status, changed_by, note)
        VALUES (?, NULL, 'pending', ?, 'create order')`,
-      [order_id, buyer_id]
+      [Number(order_id), Number(buyer_id)]
     );
 
     await conn.commit();
 
-    const [orderRows] = await conn.query(
-      "SELECT * FROM orders WHERE order_id = ?",
-      [order_id]
-    );
+    const [orderRows] = await conn.query("SELECT * FROM orders WHERE order_id=?", [order_id]);
     res.json(orderRows[0]);
   } catch (err) {
     await conn.rollback();
@@ -167,7 +167,7 @@ router.put("/confirm", async (req, res) => {
       return httpError(res, 500, "Product missing");
     }
     const product = pRows[0];
-    if (product.status !== "on_sale") {
+    if (product.status !== "reserved") {
       await conn.rollback();
       return httpError(res, 400, "Product is not available");
     }
@@ -340,11 +340,20 @@ router.put("/cancel", async (req, res) => {
       [order_id]
     );
 
-    // 商品如果已 sold 就退回 on_sale
+    // 取消訂單後：把商品退回上架（on_sale）
     const [pRows] = await conn.query(
-      "SELECT * FROM products WHERE product_id=? FOR UPDATE",
+      "SELECT product_id, status FROM products WHERE product_id=? FOR UPDATE",
       [order.product_id]
     );
+
+    if (pRows.length > 0) {
+      // 只要訂單被取消，就把商品退回 on_sale（避免 reserved/sold 卡死）
+      await conn.query(
+        "UPDATE products SET status='on_sale', buyer_id=NULL, sold_at=NULL WHERE product_id=?",
+        [order.product_id]
+      );
+    }
+
     if (pRows.length > 0 && pRows[0].status === "sold") {
       await conn.query(
         "UPDATE products SET status='on_sale', buyer_id=NULL, sold_at=NULL WHERE product_id=?",
@@ -419,7 +428,7 @@ router.get("/list", async (req, res) => {
   const whereSql = conds.length ? `WHERE ${conds.join(" AND ")}` : "";
 
   try {
-    const[rows] = await pool.query(
+    const [rows] = await pool.query(
       `SELECT 
         o.*,
         p.title AS product_title,
@@ -428,21 +437,26 @@ router.get("/list", async (req, res) => {
         ub.name  AS buyer_name,
         ub.email AS buyer_email,
         us.name  AS seller_name,
-        us.email AS seller_email
-    FROM orders o
-    JOIN products p ON p.product_id = o.product_id
-    JOIN users ub ON ub.user_id = o.buyer_id
-    JOIN users us ON us.user_id = o.seller_id
-    ${whereSql}
-    ORDER BY o.order_id DESC
-    LIMIT ? OFFSET ?`,
+        us.email AS seller_email,
+        IF(r.review_id IS NULL, 0, 1) AS reviewed
+      FROM orders o
+      JOIN products p ON p.product_id = o.product_id
+      JOIN users ub ON ub.user_id = o.buyer_id
+      JOIN users us ON us.user_id = o.seller_id
+      LEFT JOIN reviews r ON r.order_id = o.order_id
+      ${whereSql}
+      ORDER BY o.order_id DESC
+      LIMIT ? OFFSET ?`,
       [...params, Number(limit), Number(offset)]
     );
 
 
 
+
     const [countRows] = await pool.query(
-      `SELECT COUNT(*) as total FROM orders o ${whereSql}`,
+      `SELECT COUNT(DISTINCT o.order_id) as total
+      FROM orders o
+      ${whereSql}`,
       params
     );
 

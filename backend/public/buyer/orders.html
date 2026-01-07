@@ -89,8 +89,7 @@
     const currentUser = loadCurrentUser();
 
     let orders = []; // 從後端抓
-    const reviews = JSON.parse(localStorage.getItem("reviews")) || [];
-    
+
     const container = document.getElementById("orderContainer");
     const filterSelect = document.getElementById("orderFilter");
 
@@ -121,8 +120,10 @@
       }
     }
 
-        
-
+    function statusText(s){
+      const map = { pending:"待確認", confirmed:"待出貨", completed:"已完成", cancelled:"已取消" };
+      return map[s] || s;
+    }
 
     // ===== 渲染訂單 =====
     function renderOrders(filter = "all") {
@@ -136,12 +137,13 @@
       const sorted = [...orders].sort((a, b) => b.order_id - a.order_id);
 
       const filtered = sorted.filter((order) => {
-        const reviewed = reviews.some(r => r.orderId === order.order_id);
+        const reviewed = Number(order.reviewed) === 1;
         if (filter === "all") return true;
         if (filter === "reviewed") return reviewed;
         if (filter === "unreviewed") return !reviewed;
         return true;
       });
+
 
       if (!filtered.length) {
         container.innerHTML = "<p>沒有符合條件的訂單。</p>";
@@ -149,7 +151,7 @@
       }
 
       filtered.forEach(order => {
-        const reviewed = reviews.some(r => r.orderId === order.order_id);
+        const reviewed = Number(order.reviewed) === 1;
 
         const isCancelled = order.status === "cancelled";
         const canReview = (order.status === "completed") && !reviewed;
@@ -162,7 +164,7 @@
         div.innerHTML = `
           <h3>訂單編號：${order.order_id}</h3>
           <p>下單時間：${new Date(order.created_at).toLocaleString()}</p>
-          <p>狀態：<strong>${order.status}</strong></p>
+          <p>狀態：<strong>${statusText(order.status)}</strong></p>
           <p class="items">商品：${order.product_title}（NT$${order.product_price}）</p>
 
           <button class="save-btn review-btn"
